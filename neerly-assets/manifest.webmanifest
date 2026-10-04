@@ -1,0 +1,32 @@
+{
+  "id": "neerly",
+  "name": "Neerly — I'm on my way.",
+  "short_name": "Neerly",
+  "description": "Share your live location with the people you pick, for as long as you pick. It ends itself.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff1e6",
+  "theme_color": "#e85d26",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

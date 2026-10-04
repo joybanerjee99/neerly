@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e85d26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Neerly">
+<meta name="description" content="Share your live location with the people you pick, for as long as you pick. It ends itself.">
+<meta property="og:title" content="Neerly — I'm on my way.">
+<meta property="og:description" content="Live location, for a little while. Tap to watch — no app needed.">
+<title>Neerly — I'm on my way.</title>
+<link rel="icon" type="image/svg+xml" href="neerly-assets/mark.svg" id="fav-svg">
+<link rel="icon" type="image/png" sizes="32x32" href="neerly-assets/favicon-32.png">
+<link rel="apple-touch-icon" href="neerly-assets/apple-touch-icon.png" id="touch-icon">
+<link rel="manifest" href="neerly-assets/manifest.webmanifest">
+<meta property="og:image" content="https://neerly.net/neerly-assets/og.png">
+<meta property="og:url" content="https://neerly.net/">
+<link rel="canonical" href="https://neerly.net/">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --accent:#e85d26; --accent-dark:#c94a18; --accent-soft:#fde8dd; --accent-softer:#fff3ec;
+  --bg:#fffaf6; --surface:#ffffff; --text:#2a1a12; --sub:#6b5a50; --muted:#9a8a80;
+  --border:#f0e2d8; --border-strong:#e3cfc1;
+  --red:#d63a2f; --red-soft:#fdecea; --green:#2f9e6b; --green-soft:#e5f5ed;
+  --radius:16px; --shadow:0 1px 2px rgba(80,40,20,.06),0 6px 24px rgba(80,40,20,.07);
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:var(--accent-dark)}
+.app{max-width:480px;margin:0 auto;min-height:100%;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+.screen{display:none;animation:fade .18s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* Brand */
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--accent)}
+.brand .dot{width:17px;height:27px;background:url(neerly-assets/mark.svg) center/contain no-repeat}
+.topbar{display:flex;align-items:center;justify-content:space-between;min-height:40px;margin-bottom:20px}
+.hero{padding:40px 0 28px;text-align:center}
+.hero .brand{justify-content:center;font-size:34px}
+.hero .brand .dot{width:28px;height:44px}
+.tagline{color:var(--sub);font-size:18px;margin-top:6px}
+
+h1{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:24px 0 10px}
+.lead{color:var(--sub);margin-top:6px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.center{text-align:center}
+
+/* Cards / forms */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-size:14px;font-weight:600;color:var(--sub);margin-bottom:6px}
+.input{width:100%;padding:13px 14px;border:1.5px solid var(--border-strong);border-radius:12px;background:#fff;font-size:16px;outline:none;transition:border-color .15s,box-shadow .15s}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.pw{position:relative}
+.pw .input{padding-right:64px}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:600;color:var(--sub);padding:8px 10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 20px;border-radius:999px;font-weight:700;font-size:17px;transition:transform .08s,background .15s,opacity .15s;min-height:52px}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(232,93,38,.35)}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-ghost{background:var(--accent-softer);color:var(--accent-dark)}
+.btn-outline{border:1.5px solid var(--border-strong);background:#fff;color:var(--text)}
+.btn-danger{background:var(--red-soft);color:var(--red)}
+.btn-danger-solid{background:var(--red);color:#fff}
+.link{color:var(--accent-dark);font-weight:600;padding:8px 4px;text-decoration:none;display:inline-block}
+.link-muted{color:var(--sub);font-weight:500}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.stack>*+*{margin-top:12px}
+.err{display:none;background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;margin-bottom:14px}
+.err.on{display:block}
+.note{background:var(--accent-softer);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--sub)}
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.btn-ghost .spinner,.btn-outline .spinner{border-color:var(--accent-soft);border-top-color:var(--accent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Segmented durations */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{padding:14px 6px;border-radius:14px;border:1.5px solid var(--border-strong);background:#fff;font-weight:700;font-size:17px;transition:all .12s}
+.seg button small{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
+.seg button.on{border-color:var(--accent);background:var(--accent-softer);color:var(--accent-dark);box-shadow:0 0 0 3px var(--accent-soft)}
+.seg button.on small{color:var(--accent-dark)}
+
+/* Contacts */
+.contacts{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.contact{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.contact:last-child{border-bottom:none}
+.check{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);display:grid;place-items:center;transition:all .12s}
+.contact.on .check{background:var(--accent);border-color:var(--accent)}
+.contact.on .check::after{content:'';width:10px;height:6px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.avatar{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:grid;place-items:center;font-weight:700;font-size:15px}
+.who{flex:1;min-width:0}
+.who b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{display:block;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.del{flex:none;color:var(--red);font-weight:600;font-size:14px;padding:8px 10px;border-radius:10px;background:var(--red-soft);display:none}
+.editing .del{display:block}
+.editing .check{display:none}
+.empty{padding:20px;text-align:center;color:var(--muted);font-size:15px}
+.addrow{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;color:var(--accent-dark);font-weight:600}
+.addrow .plus{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:18px;line-height:1}
+.addform{display:none;padding:14px;border-top:1px solid var(--border);background:var(--accent-softer)}
+.addform.on{display:block}
+.section-head{display:flex;align-items:baseline;justify-content:space-between}
+.section-head button{font-size:14px;font-weight:600;color:var(--accent-dark);padding:4px}
+.sticky-cta{position:sticky;bottom:0;padding:16px 0 calc(8px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(255,250,246,0),var(--bg) 30%);margin-top:8px}
+
+/* Live */
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--green-soft);color:var(--green);font-weight:700;font-size:14px}
+.pill .pulse{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 1.6s infinite}
+.pill.red{background:var(--red-soft);color:var(--red)}
+.pill.grey{background:#f2ece8;color:var(--sub)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,158,107,.5)}70%{box-shadow:0 0 0 8px rgba(47,158,107,0)}100%{box-shadow:0 0 0 0 rgba(47,158,107,0)}}
+.count{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--sub);background:#fff;border:1px solid var(--border);padding:6px 12px;border-radius:999px;font-size:14px}
+.timer{font-size:68px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1;text-align:center;margin-top:8px;transition:color .3s}
+.timer-cap{text-align:center;color:var(--sub);margin-top:6px;min-height:22px}
+.bar{height:10px;border-radius:999px;background:var(--accent-soft);overflow:hidden;margin:16px 0}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .5s linear,background .3s}
+.urgent .timer{color:var(--red)}
+.urgent .bar{background:var(--red-soft)}
+.urgent .bar i{background:var(--red)}
+.map{height:260px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:#efe7e0;position:relative;z-index:0}
+.map-wrap{position:relative}
+.recenter{position:absolute;right:10px;bottom:10px;z-index:500;background:#fff;border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;box-shadow:var(--shadow);display:none}
+.map-foot{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted);margin-top:8px;gap:8px}
+.banner{display:none;background:#fff4e0;color:#8a5a00;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;margin-bottom:12px}
+.banner.on{display:block}
+.rlist{background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
+.ritem{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.ritem:last-child{border-bottom:none}
+.status{flex:none;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px;white-space:nowrap}
+.status.sent{background:#f2ece8;color:var(--sub)}
+.status.watching{background:var(--green-soft);color:var(--green)}
+.status.viewed{background:var(--accent-softer);color:var(--accent-dark)}
+.ext{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ext button{padding:12px 4px;border-radius:14px;background:var(--accent-softer);color:var(--accent-dark);font-weight:700}
+.ext button[disabled]{opacity:.4}
+
+/* Recipient */
+.r-head{padding:4px 0 12px}
+.r-head h1{font-size:28px}
+.r-map{height:min(52vh,420px)}
+.big-emoji{font-size:56px;text-align:center;margin:24px 0 8px}
+
+/* Modal + toast */
+.scrim{position:fixed;inset:0;background:rgba(42,26,18,.4);display:none;align-items:flex-end;justify-content:center;z-index:1000;padding:16px}
+.scrim.on{display:flex}
+.sheet{background:#fff;border-radius:22px;padding:24px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:448px;animation:up .2s ease}
+@keyframes up{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:12px 18px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:all .25s;z-index:1100;max-width:calc(100% - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.menu-btn{font-weight:600;color:var(--sub);font-size:15px;padding:8px 4px}
+.hidden{display:none!important}
+.leaflet-container{font-family:var(--font)}
+
+/* v0.4 — Buddies */
+.buddy{display:inline-grid;place-items:center;border-radius:50%;background:#fff;flex:none}
+.buddy svg{width:82%;height:82%;display:block}
+.buddy.ring{box-shadow:0 0 0 3px var(--accent),0 4px 14px rgba(80,40,20,.15)}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.bgrid button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:16px;border:1.5px solid var(--border-strong);background:#fff;font-size:13px;font-weight:600;color:var(--sub);transition:all .12s}
+.bgrid button svg{width:52px;height:52px}
+.bgrid button.on{border-color:var(--accent);background:var(--accent-softer);color:var(--accent-dark);box-shadow:0 0 0 3px var(--accent-soft);transform:translateY(-2px)}
+.bgrid button:active{transform:scale(.96)}
+.me-btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--text);font-size:15px;padding:4px 12px 4px 4px;border-radius:999px;background:#fff;border:1px solid var(--border);max-width:60%}
+.me-btn .buddy{width:32px;height:32px;background:var(--accent-softer)}
+.me-btn span.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* map pin */
+.bpin-wrap{background:none;border:none}
+.bpin{width:48px;height:48px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 3px 10px rgba(80,40,20,.35);display:grid;place-items:center;animation:bob 2.4s ease-in-out infinite}
+.bpin svg{width:38px;height:38px}
+.bpin.walk{animation:waddle .5s ease-in-out 4}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes waddle{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg) translateY(-2px)}75%{transform:rotate(9deg) translateY(-2px)}}
+@media (prefers-reduced-motion:reduce){.bpin,.bpin.walk{animation:none}}
+/* username field */
+.at{position:relative}
+.at::before{content:'@';position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
+.at .input{padding-left:32px}
+.uhint{font-size:13px;margin-top:6px;min-height:18px;color:var(--muted)}
+.uhint.good{color:var(--green)}
+.uhint.bad{color:var(--red)}
+.uhint button{color:var(--accent-dark);font-weight:700;text-decoration:underline;font-size:13px;padding:0}
+/* profile + stats */
+.phead{text-align:center;padding:8px 0 4px}
+.phead .buddy{width:104px;height:104px;margin-bottom:14px}
+.phead .handle{color:var(--muted);font-weight:600;margin-top:2px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stile{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
+.stile b{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stile span{display:block;font-size:13px;color:var(--sub);margin-top:4px;font-weight:500}
+.stile.wide{grid-column:1/-1;display:flex;align-items:center;gap:12px}
+.stile.wide .fire{font-size:30px}
+.alist{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.alist button{display:flex;justify-content:space-between;align-items:center;width:100%;padding:15px 16px;border-bottom:1px solid var(--border);font-weight:600;text-align:left}
+.alist button:last-child{border-bottom:none}
+.alist button::after{content:'›';color:var(--muted);font-size:20px;line-height:1}
+.alist .danger{color:var(--red)}
+/* end-of-share summary */
+.sumcard{text-align:center;padding:24px 20px;background:linear-gradient(180deg,var(--accent-softer),#fff 70%)}
+.sumcard .buddy{width:88px;height:88px;margin-bottom:12px}
+.sumrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.sumrow div{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 4px}
+.sumrow b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sumrow span{font-size:12px;color:var(--sub);font-weight:600}
+.sumwho{color:var(--sub);font-size:15px;margin-top:14px}
+.lifetime{margin-top:16px;font-weight:600;color:var(--accent-dark)}
+.r-title{display:flex;align-items:center;gap:12px}
+.r-title .buddy{width:48px;height:48px;background:var(--accent-softer)}
+#rx-sub:empty{display:none}
+
+/* v0.5 — share back, badges, look, install */
+.sb-banner{display:flex;gap:12px;align-items:center;background:var(--accent-softer);border:1.5px solid var(--accent-soft);border-radius:16px;padding:12px 14px;margin:18px 0 4px}
+.sb-banner .buddy{width:46px;height:46px}
+.sb-banner b{display:block}
+.sb-banner .link{padding:4px 0;font-size:14px}
+.bshelf{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.btile{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.btile b{font-size:13px;line-height:1.2}
+.btile span{font-size:11px;color:var(--muted)}
+.btile.new{box-shadow:0 0 0 2px var(--accent)}
+.btile.more{border-style:dashed;border-color:var(--border-strong);background:transparent;justify-content:center}
+.medal{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:radial-gradient(circle at 35% 30%,#fff7f1,#ffd6bd);box-shadow:inset 0 0 0 3px var(--accent)}
+.medal svg{width:70%;height:70%}
+.medal.night{background:radial-gradient(circle at 50% 35%,#5a2d6e,#2a1638);box-shadow:inset 0 0 0 3px #ffcf4d}
+.medal.mystery{background:#f6efe9;box-shadow:inset 0 0 0 2px var(--border-strong);color:var(--muted);font-weight:800;font-size:24px}
+.medal.big{width:108px;height:108px;font-size:54px;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 13px;border-radius:999px;border:1.5px solid var(--border-strong);background:#fff;font-weight:600;font-size:14px;color:var(--text)}
+.chip.on{border-color:var(--accent);background:var(--accent-softer);color:var(--accent-dark)}
+.look-prev{display:flex;justify-content:center;margin:6px 0 12px}
+.look-prev .buddy{width:96px;height:96px;background:var(--accent-softer)}
+.look-label{font-size:13px;font-weight:700;color:var(--sub);margin:14px 0 8px}
+.install{display:flex;gap:14px;align-items:center;margin-top:24px}
+.install img{width:52px;height:52px;border-radius:12px;flex:none}
+.sum-badges{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.sum-badge{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--accent-soft);border-radius:14px;padding:10px 12px;text-align:left}
+.sum-badge .medal{width:44px;height:44px;font-size:22px;flex:none}
+.sum-badge b{display:block;font-size:15px}
+.sum-badge span{font-size:13px;color:var(--sub)}
+
+/* v0.6 — share modes, status, weather, trail marks */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#f4ebe4;border-radius:999px;padding:4px;margin-bottom:18px}
+.modes button{padding:10px 8px;border-radius:999px;font-weight:700;font-size:15px;color:var(--sub);transition:all .15s}
+.modes button.on{background:#fff;color:var(--accent-dark);box-shadow:0 1px 4px rgba(80,40,20,.14)}
+.seg.four{grid-template-columns:repeat(4,1fr)}
+.seg.four button{font-size:16px;padding:13px 4px}
+.note-field{margin-top:14px}
+.note-field .input{padding-right:40px}
+.note-wrap{position:relative}
+.note-wrap .clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;color:var(--muted);font-size:18px;line-height:1}
+.chips.status{margin-top:10px}
+.chips.status .chip{font-size:13px;padding:7px 11px}
+.switch-row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:14px;cursor:pointer}
+.switch-row .txt{flex:1;min-width:0}
+.switch-row b{display:block;font-weight:600}
+.switch-row span.sub{display:block;font-size:13px;color:var(--muted)}
+.switch{flex:none;width:50px;height:30px;border-radius:999px;background:var(--border-strong);position:relative;transition:background .15s}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
+.switch.on{background:var(--green)}
+.switch.on::after{transform:translateX(20px)}
+.switch-row.compact{margin-top:10px;padding:10px 12px}
+/* speech bubble next to the buddy (Right now) */
+.bubble{position:relative;display:inline-block;background:#fff;border:1.5px solid var(--accent-soft);border-radius:16px;padding:9px 14px;font-weight:600;font-size:16px;box-shadow:var(--shadow);max-width:100%;overflow-wrap:anywhere}
+.bubble small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:1px}
+.now-card{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 20px;background:linear-gradient(180deg,var(--accent-softer),#fff 75%);border:1px solid var(--border);border-radius:var(--radius);text-align:center}
+.now-card .buddy{width:96px;height:96px;box-shadow:0 0 0 3px var(--accent),0 4px 14px rgba(80,40,20,.15);animation:bob 2.4s ease-in-out infinite}
+.now-card .bubble::before{content:'';position:absolute;left:50%;top:-8px;width:14px;height:14px;background:#fff;border-left:1.5px solid var(--accent-soft);border-top:1.5px solid var(--accent-soft);transform:translateX(-50%) rotate(45deg)}
+.r-sub{color:var(--sub);font-weight:600;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.r-sub:empty{display:none}
+.wx{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;color:var(--sub);white-space:nowrap}
+.live-note{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-bottom:12px}
+.live-note .txt{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere}
+.live-note .txt .muted{font-weight:500;font-size:15px}
+.live-note .txt small{display:block;font-weight:500;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.live-note .link{font-size:14px;padding:4px 2px}
+.live-note form{display:flex;gap:8px;flex:1}
+.live-note form .input{padding:9px 12px}
+.live-note form .btn{width:auto;min-height:0;padding:9px 16px;font-size:15px}
+/* pin for Right now: a soft pulse under the buddy */
+.bpin.here{animation:none;position:relative}
+.bpin.here::before{content:'';position:absolute;inset:-4px;border-radius:50%;border:3px solid var(--accent);animation:ring 2s ease-out infinite}
+@keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.8);opacity:0}}
+@media (prefers-reduced-motion:reduce){.bpin.here::before,.now-card .buddy{animation:none}.bpin.here::before{transform:scale(1.3);opacity:.35}} /* v0.6.1: a steady ring instead of none */
+/* v0.6.1 — Right now: the status as a speech bubble above the buddy's pin */
+.map-bubble{position:absolute;z-index:2;left:50%;bottom:calc(100% + 18px);transform:translateX(-50%);width:max-content;max-width:190px;background:#fff;border:1.5px solid var(--accent-soft);border-radius:14px;padding:6px 11px;font-weight:600;font-size:14px;line-height:1.25;color:var(--text);text-align:center;box-shadow:0 3px 10px rgba(80,40,20,.2);overflow-wrap:anywhere;pointer-events:none}
+.map-bubble small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.map-bubble::after{content:'';position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1.5px solid var(--accent-soft);border-bottom:1.5px solid var(--accent-soft);transform:translateX(-50%) rotate(45deg)}
+.tmark{pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═════════════ SIGN IN ═════════════ -->
+<section class="screen" id="s-signin">
+  <div class="hero"><div class="brand"><span class="dot"></span>Neerly</div><p class="tagline">I'm on my way.</p></div>
+  <form class="card" id="f-signin" novalidate>
+    <div class="err"></div>
+    <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" inputmode="email" required></label>
+    <label class="field"><span>Password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="current-password" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <button class="btn btn-primary" type="submit">Sign in</button>
+    <p class="center" style="margin-top:10px"><a href="#" class="link link-muted" data-go="forgot">Forgot password?</a></p>
+  </form>
+  <p class="center" style="margin-top:18px">New here? <a href="#" class="link" data-go="signup">Create an account</a></p>
+</section>
+
+<!-- ═════════════ SIGN UP ═════════════ -->
+<section class="screen" id="s-signup">
+  <div class="hero" style="padding-bottom:20px"><div class="brand"><span class="dot"></span>Neerly</div><p class="tagline" id="signup-tag">Share where you are, for a little while.</p></div>
+  <form class="card" id="f-signup" novalidate>
+    <div class="err"></div>
+    <label class="field"><span>Your name</span><input class="input" name="name" autocomplete="given-name" placeholder="What your people call you" required></label>
+    <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" inputmode="email" required></label>
+    <label class="field"><span>Username</span><div class="at"><input class="input" name="username" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="yourname" required></div><div class="uhint" data-uhint>We'll suggest one from your email. Change it if you like.</div></label>
+    <label class="field"><span>Password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <button class="btn btn-primary" type="submit">Create account</button>
+  </form>
+  <p class="center" style="margin-top:18px">Already have one? <a href="#" class="link" data-go="signin">Sign in</a></p>
+</section>
+
+<!-- ═════════════ FORGOT ═════════════ -->
+<section class="screen" id="s-forgot">
+  <div class="topbar"><a href="#" class="link" data-go="signin">← Back</a></div>
+  <h1>Forgot your password?</h1>
+  <p class="lead">We'll email you a link to set a new one.</p>
+  <form class="card" id="f-forgot" style="margin-top:20px" novalidate>
+    <div class="err"></div>
+    <div id="forgot-form">
+      <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" inputmode="email" required></label>
+      <button class="btn btn-primary" type="submit">Send me a link</button>
+    </div>
+    <div id="forgot-done" class="hidden center">
+      <div class="big-emoji" style="margin-top:4px">📬</div>
+      <p><b>Check your inbox.</b></p>
+      <p class="muted small" style="margin-top:6px">If there's a Neerly account for <b id="forgot-email"></b>, a link is on its way. It works for 15 minutes.</p>
+    </div>
+  </form>
+</section>
+
+<!-- ═════════════ RESET ═════════════ -->
+<section class="screen" id="s-reset">
+  <div class="hero" style="padding-bottom:20px"><div class="brand"><span class="dot"></span>Neerly</div></div>
+  <h1>Set a new password</h1>
+  <form class="card" id="f-reset" style="margin-top:20px" novalidate>
+    <div class="err"></div>
+    <label class="field"><span>New password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <button class="btn btn-primary" type="submit">Save and sign in</button>
+  </form>
+</section>
+
+<!-- ═════════════ SHARE (sender) ═════════════ -->
+<section class="screen" id="s-share">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Neerly</div>
+    <button class="me-btn" id="btn-account" aria-label="Your profile"><span class="buddy" id="me-buddy"></span><span class="nm" id="me-name"></span></button>
+  </div>
+  <div class="modes" id="modes" role="tablist" aria-label="What to share">
+    <button type="button" role="tab" data-mode="way" class="on" aria-selected="true">👣 On my way</button>
+    <button type="button" role="tab" data-mode="now" aria-selected="false">📍 Right now</button>
+  </div>
+  <h1 id="share-title">On your way?</h1>
+  <p class="lead" id="share-lead">Pick how long and who can watch. It ends on its own.</p>
+  <div class="sb-banner hidden" id="sb-banner">
+    <span class="buddy" id="sb-buddy"></span>
+    <div style="flex:1;min-width:0"><b>Sharing back with <span id="sb-name"></span></b><span class="muted small">They'll get a link. Their email stays private.</span></div>
+    <button class="link" id="sb-cancel">Cancel</button>
+  </div>
+
+  <label class="field note-field" id="note-field">
+    <span id="note-label">Heading to <span class="muted" style="display:inline;font-weight:400">(optional)</span></span>
+    <div class="note-wrap"><input class="input" id="note-input" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Grandma’s, the office, Blue Bottle…"><button type="button" class="clear hidden" id="note-clear" aria-label="Clear">×</button></div>
+  </label>
+  <div class="chips status hidden" id="status-chips"></div>
+  <div class="switch-row hidden" id="loc-row" role="switch" aria-checked="true" tabindex="0">
+    <div class="txt"><b>Show where I am</b><span class="sub" id="loc-sub">A pin on the map, no trail</span></div>
+    <span class="switch on" id="loc-switch"></span>
+  </div>
+
+  <h2>For how long</h2>
+  <div class="seg" id="durations"></div>
+
+  <div id="who-section">
+  <div class="section-head"><h2>Who can watch</h2><button id="btn-edit-contacts" class="hidden">Edit</button></div>
+  <div class="contacts" id="contacts">
+    <div id="contact-list"></div>
+    <button class="addrow" id="btn-add-toggle"><span class="plus">+</span>Add someone</button>
+    <form class="addform" id="f-add" novalidate>
+      <div class="err"></div>
+      <label class="field"><span>Email</span><input class="input" type="email" name="email" inputmode="email" autocomplete="off" placeholder="grandma@example.com" required></label>
+      <label class="field"><span>Nickname <span class="muted" style="display:inline;font-weight:400">(optional)</span></span><input class="input" name="nickname" autocomplete="off" placeholder="Grandma"></label>
+      <div class="row"><button type="button" class="btn btn-outline" id="btn-add-cancel">Cancel</button><button type="submit" class="btn btn-primary">Add</button></div>
+    </form>
+  </div>
+  <p class="muted small" style="margin-top:10px">They'll get an email with a link. No app or account needed to watch.</p>
+  </div>
+
+  <div class="sticky-cta">
+    <div class="err" id="share-err"></div>
+    <button class="btn btn-primary" id="btn-share">Share my location</button>
+    <p class="muted small center" id="share-hint" style="margin-top:8px"></p>
+  </div>
+</section>
+
+<!-- ═════════════ LIVE (sender) ═════════════ -->
+<section class="screen" id="s-live">
+  <div class="topbar">
+    <span class="pill"><span class="pulse"></span>Sharing live</span>
+    <span class="count" id="live-count" title="People on this share">👥 0</span>
+  </div>
+  <div id="live-clock">
+    <div class="timer" id="live-timer">--:--</div>
+    <p class="timer-cap" id="live-cap">left</p>
+    <div class="bar"><i id="live-bar" style="width:100%"></i></div>
+  </div>
+  <div class="banner" id="live-banner"></div>
+  <div class="live-note" id="live-note">
+    <div class="txt" id="live-note-view"><small id="live-note-label">Heading to</small><span id="live-note-text"></span></div>
+    <button class="link" id="btn-note-edit">Edit</button>
+    <form id="f-note" class="hidden" novalidate><input class="input" name="note" maxlength="60" autocomplete="off" enterkeyhint="done"><button class="btn btn-primary" type="submit">Save</button></form>
+  </div>
+  <div id="live-mapbox">
+    <div class="map-wrap"><div class="map" id="live-map"></div><button class="recenter" id="live-recenter">Recenter</button></div>
+    <div class="map-foot"><span id="live-updated">Finding you…</span><span id="live-dist">Keep this screen open</span></div>
+  </div>
+  <div class="now-card hidden" id="live-nomap"><span class="buddy" id="live-nm-buddy"></span><div class="bubble" id="live-nm-bubble"></div><p class="muted small">Your location isn’t shared, just this.</p></div>
+  <div class="switch-row compact" id="chime-row" role="switch" aria-checked="true" tabindex="0">
+    <div class="txt"><b>🔔 Tell me when someone starts watching</b><span class="sub">A soft chime while this screen is open</span></div>
+    <span class="switch on" id="chime-switch"></span>
+  </div>
+
+  <div class="row" style="margin-top:16px">
+    <button class="btn btn-ghost" id="btn-copy">Copy link</button>
+    <button class="btn btn-ghost" id="btn-sharesheet">Send via…</button>
+  </div>
+
+  <h2>Who's watching</h2>
+  <div class="rlist" id="live-recipients"></div>
+
+  <h2>Need longer?</h2>
+  <div class="ext" id="live-ext">
+    <button data-min="15">+15 min</button><button data-min="30">+30 min</button><button data-min="60">+1 hour</button>
+  </div>
+  <p class="muted small" id="live-ext-note" style="margin-top:8px">A share can run up to 4 hours in total.</p>
+
+  <button class="btn btn-danger" id="btn-stop" style="margin-top:24px">Stop sharing</button>
+</section>
+
+<!-- ═════════════ ENDED (sender) ═════════════ -->
+<section class="screen" id="s-ended">
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div></div>
+  <div class="card sumcard">
+    <span class="buddy ring" id="sum-buddy"></span>
+    <h1>Your share has ended</h1>
+    <p class="lead" id="ended-sub">Your location isn't being shared anymore — and it isn't kept.</p>
+    <div class="sumrow" id="sum-row">
+      <div><b id="sum-time">–</b><span>shared</span></div>
+      <div><b id="sum-dist">–</b><span>traveled</span></div>
+      <div><b id="sum-watch">–</b><span id="sum-watch-l">viewers</span></div>
+    </div>
+    <p class="sumwho" id="sum-who"></p>
+    <p class="lifetime" id="sum-life"></p>
+    <div class="sum-badges" id="sum-badges"></div>
+  </div>
+  <button class="btn btn-primary" data-go="share" style="margin-top:24px">Share again</button>
+  <p class="center" style="margin-top:10px"><a href="#" class="link" data-go="profile">See your stats</a></p>
+</section>
+
+<!-- ═════════════ PICK A BUDDY ═════════════ -->
+<section class="screen" id="s-buddy">
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div></div>
+  <h1>Pick your buddy</h1>
+  <p class="lead">Your buddy walks your route on the map for the people watching. You can change it anytime in your profile.</p>
+  <div class="bgrid" id="buddy-grid" style="margin-top:20px"></div>
+  <div class="sticky-cta">
+    <div class="err" id="buddy-err"></div>
+    <button class="btn btn-primary" id="btn-buddy-save" disabled>Pick one</button>
+  </div>
+</section>
+
+<!-- ═════════════ PROFILE ═════════════ -->
+<section class="screen" id="s-profile">
+  <div class="topbar"><a href="#" class="link" id="profile-back">← Back</a><button class="link" id="btn-edit-profile">Edit</button></div>
+  <div class="phead">
+    <span class="buddy ring" id="p-buddy"></span>
+    <h1 id="p-name"></h1>
+    <p class="handle" id="p-handle"></p>
+  </div>
+  <h2>Your Neerly so far</h2>
+  <div class="sgrid" id="p-stats"></div>
+  <p class="muted small" style="margin-top:10px">Counted only while you share. We keep the totals, never the places.</p>
+  <h2>Badges</h2>
+  <div class="bshelf" id="p-badges"></div>
+  <div class="card install hidden" id="p-install">
+    <img src="neerly-assets/apple-touch-icon.png" alt="" id="p-install-icon">
+    <div style="flex:1"><b>Put Neerly on your home screen</b><p class="muted small" id="p-install-how" style="margin-top:4px"></p>
+      <button class="btn btn-primary hidden" id="btn-install" style="margin-top:10px;min-height:44px;padding:10px 16px;font-size:15px">Add to Home Screen</button></div>
+  </div>
+  <h2>Account</h2>
+  <div class="alist">
+    <button id="btn-pw">Change password</button>
+    <button id="btn-signout">Sign out</button>
+    <button id="btn-delete" class="danger">Delete account</button>
+  </div>
+  <p class="muted small center" style="margin-top:14px" id="p-email"></p>
+</section>
+
+<!-- ═════════════ EDIT PROFILE ═════════════ -->
+<section class="screen" id="s-editprofile">
+  <div class="topbar"><a href="#" class="link" data-go="profile">← Cancel</a></div>
+  <h1>Edit profile</h1>
+  <form id="f-profile" novalidate style="margin-top:18px">
+    <div class="err"></div>
+    <div class="card">
+      <label class="field"><span>Your name</span><input class="input" name="name" autocomplete="given-name" maxlength="40" required></label>
+      <label class="field" style="margin-bottom:0"><span>Username</span><div class="at"><input class="input" name="username" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" required></div><div class="uhint" data-uhint></div></label>
+    </div>
+    <h2>Your buddy</h2>
+    <div class="bgrid" id="edit-buddy-grid"></div>
+    <h2>Your buddy's look</h2>
+    <div class="card" id="look-editor">
+      <div class="look-prev"><span class="buddy ring" id="look-buddy"></span></div>
+      <div id="look-body"></div>
+    </div>
+    <div class="sticky-cta"><button class="btn btn-primary" type="submit">Save</button></div>
+  </form>
+</section>
+
+<!-- ═════════════ CHANGE PASSWORD ═════════════ -->
+<section class="screen" id="s-password">
+  <div class="topbar"><a href="#" class="link" data-go="profile">← Back</a></div>
+  <h1>Change password</h1>
+  <p class="lead">You'll stay signed in here. Other devices get signed out.</p>
+  <form class="card" id="f-password" style="margin-top:20px" novalidate>
+    <div class="err"></div>
+    <label class="field"><span>Current password</span><div class="pw"><input class="input" type="password" name="current" autocomplete="current-password" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <label class="field"><span>New password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <button class="btn btn-primary" type="submit">Save new password</button>
+  </form>
+</section>
+
+<!-- ═════════════ DELETE ACCOUNT ═════════════ -->
+<section class="screen" id="s-delete">
+  <div class="topbar"><a href="#" class="link" data-go="profile">← Back</a></div>
+  <h1>Delete your account?</h1>
+  <p class="lead">This removes your profile, buddy, contacts, stats and share history for good. It can't be undone.</p>
+  <form class="card" id="f-delete" style="margin-top:20px" novalidate>
+    <div class="err"></div>
+    <label class="field"><span>Type your password to confirm</span><div class="pw"><input class="input" type="password" name="password" autocomplete="current-password" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <button class="btn btn-danger-solid" type="submit">Delete my account</button>
+  </form>
+</section>
+
+<!-- ═════════════ RECIPIENT LIVE ═════════════ -->
+<section class="screen" id="s-rlive">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Neerly</div>
+    <span class="pill"><span class="pulse"></span>Live</span>
+  </div>
+  <div class="r-head">
+    <h1 class="r-title"><span class="buddy" id="r-buddy"></span><span id="r-title-text"><span class="sender-name"></span> is on the way</span></h1>
+    <div class="r-sub" id="r-sub"></div>
+  </div>
+  <div id="r-mapbox">
+    <div class="map-wrap"><div class="map r-map" id="r-map"></div><button class="recenter" id="r-recenter">Recenter</button></div>
+    <div class="map-foot"><span id="r-updated">Loading…</span><a class="link small" id="r-directions" target="_blank" rel="noopener" style="padding:0">Open in Maps ↗</a></div>
+  </div>
+  <div class="now-card hidden" id="r-nomap"><span class="buddy" id="r-nm-buddy"></span><div class="bubble" id="r-nm-bubble"></div></div>
+  <div id="r-clock" style="margin-top:14px">
+    <div class="bar" style="margin-top:0"><i id="r-bar" style="width:100%"></i></div>
+    <p class="center"><b id="r-timer" style="font-variant-numeric:tabular-nums;font-size:20px">--:--</b> <span class="muted">left in this share</span></p>
+  </div>
+  <button class="btn btn-ghost" id="btn-shareback" style="margin-top:20px">Share my location back</button>
+  <p class="muted small center" style="margin-top:14px" id="r-foot">Neerly shares are time-limited. When this one ends, <span class="sender-name"></span>'s location disappears.</p>
+</section>
+
+<!-- ═════════════ RECIPIENT EXPIRED ═════════════ -->
+<section class="screen" id="s-rexpired">
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div><span class="pill grey">Ended</span></div>
+  <div class="big-emoji" id="rx-emoji">👋</div>
+  <h1 class="center" id="rx-title"><span class="sender-name"></span> is no longer sharing their location</h1>
+  <p class="lead center" id="rx-sub"></p>
+  <div id="rx-actions" style="margin-top:28px">
+    <button class="btn btn-primary" id="btn-request">Request an update</button>
+    <form class="card hidden" id="f-request" novalidate style="margin-top:4px">
+      <div class="err"></div>
+      <p class="small muted" style="margin-bottom:14px">So <span class="sender-name"></span> knows who's asking:</p>
+      <label class="field"><span>Your name</span><input class="input" name="name" autocomplete="given-name" required></label>
+      <label class="field"><span>Your email</span><input class="input" type="email" name="email" autocomplete="email" inputmode="email" required></label>
+      <button class="btn btn-primary" type="submit">Send request</button>
+    </form>
+    <button class="btn btn-ghost hidden" id="btn-shareback2" style="margin-top:12px">Share yours back</button>
+  </div>
+</section>
+
+<!-- ═════════════ REQUEST SENT (+ sign-up prompt) ═════════════ -->
+<section class="screen" id="s-rsent">
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div></div>
+  <div class="big-emoji">🧡</div>
+  <h1 class="center">Request sent</h1>
+  <p class="lead center" id="rsent-sub">We let <span class="sender-name"></span> know you asked. If they share again, you'll get a fresh link.</p>
+
+  <div id="rsent-signup" class="hidden">
+    <h2 style="margin-top:32px">Make it mutual</h2>
+    <p class="muted small" style="margin-bottom:14px">Create a free account, pick your own buddy, and share yours back next time. Nobody sees your location unless you send it.</p>
+    <form class="card" id="f-rsignup" novalidate>
+      <div class="err"></div>
+      <label class="field"><span>Your name</span><input class="input" name="name" autocomplete="given-name" required></label>
+      <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" inputmode="email" required></label>
+      <label class="field"><span>Password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required><button type="button" data-toggle-pw>Show</button></div></label>
+      <button class="btn btn-primary" type="submit">Create account</button>
+    </form>
+    <p class="center" style="margin-top:14px"><a href="#" class="link link-muted" data-go="signin">I already have an account</a></p>
+  </div>
+  <div id="rsent-signedin" class="hidden" style="margin-top:28px">
+    <button class="btn btn-ghost" id="btn-rsent-share">Share my location back</button>
+  </div>
+</section>
+
+</div>
+
+<!-- Modal -->
+<div class="scrim" id="modal">
+  <div class="sheet">
+    <h1 id="modal-title" style="font-size:22px"></h1>
+    <p class="lead" id="modal-body"></p>
+    <div class="stack" style="margin-top:20px" id="modal-actions"></div>
+  </div>
+</div>
+<div class="scrim" id="celebrate">
+  <div class="sheet center">
+    <p class="muted small" style="font-weight:700;letter-spacing:.06em;text-transform:uppercase">New badge</p>
+    <div style="display:flex;justify-content:center;margin:14px 0 10px"><span class="medal big" id="cel-medal"></span></div>
+    <h1 id="cel-name" style="font-size:24px"></h1>
+    <p class="lead" id="cel-how"></p>
+    <p class="note" id="cel-reward" style="margin-top:14px"></p>
+    <div class="stack" style="margin-top:18px"><button class="btn btn-primary" id="cel-next">Nice!</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+'use strict';
+// ─────────────────────────────────────────────────────────────────────────────
+// Config
+// ─────────────────────────────────────────────────────────────────────────────
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? `http://${location.hostname}:3999`
+  : 'https://nearish-relay.onrender.com';
+// Paste a Google Maps JavaScript API key here to switch from OpenStreetMap to Google Maps.
+const MAPS_API_KEY = '';
+const UPDATE_MS = 17000;          // sender pushes, recipients poll
+const SESSION_KEY = 'neerly_session';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tiny helpers
+// ─────────────────────────────────────────────────────────────────────────────
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+
+const S = {
+  session: null,          // { token, user }
+  contacts: [],
+  selected: new Set(),    // emails
+  minutes: 30,
+  mode: 'way',            // v0.6: 'way' (On my way) | 'now' (Right now)
+  minutesBy: { way: 30, now: 60 },
+  showLoc: true,          // v0.6: Right now can hide the location
+  prevWatch: null,        // v0.6: who was watching at the last sync (for the chime)
+  share: null,            // sender view from server
+  offset: 0,              // serverNow - Date.now()
+  timers: [],
+  watchId: null,
+  fix: null,              // { lat, lng, accuracy, ts }
+  pushedFixTs: 0,
+  syncing: false,
+  wakeLock: null,
+  map: null,
+  editing: false,
+  recip: null,            // { token, r, viewerId, share, recipient, map, trail }
+  trail: [],              // v0.4: this share's route, [[lat,lng],…] (lives only in memory)
+  stats: null,            // v0.4: lifetime totals from /me
+  pickBuddy: null, editBuddy: null,
+  badges: null, unlocked: null, editLook: null, shareBack: null, celebrating: false,
+};
+const serverNow = () => Date.now() + S.offset;
+
+let toastTimer;
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+function showErr(form, msg) { const e = $('.err', form); if (!e) return toast(msg); e.textContent = msg; e.classList.toggle('on', !!msg); }
+function busy(btn, on, label) {
+  if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>${label ? esc(label) : ''}`; }
+  else if (btn.dataset.label != null) { btn.disabled = false; btn.innerHTML = btn.dataset.label; delete btn.dataset.label; }
+}
+
+function clearTimers() { S.timers.forEach(clearInterval); S.timers = []; }
+function every(ms, fn) { S.timers.push(setInterval(fn, ms)); }
+
+function show(id) {
+  clearTimers();
+  $$('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
+  window.scrollTo(0, 0);
+}
+
+function fmtClock(ms) {
+  const t = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+function ago(ts) {
+  const s = Math.max(0, Math.round((serverNow() - ts) / 1000));
+  if (s < 10) return 'just now';
+  if (s < 60) return `${s}s ago`;
+  const m = Math.round(s / 60);
+  return `${m} min ago`;
+}
+function displayName(c) { return c.nickname || c.email.split('@')[0]; }
+function initials(c) { const n = (c.nickname || c.email).trim(); return (n[0] || '?').toUpperCase(); }
+function listNames(names) {
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.length} people`;
+}
+function cleanUrl() { history.replaceState(null, '', location.pathname); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Buddies (v0.4). Original drawings, 64×64. Ids must match AVATARS in neerly.mjs.
+// ─────────────────────────────────────────────────────────────────────────────
+const INK = '#2a1a12';
+const eyes = (y = 35, dx = 7, r = 2.8) => `<circle cx="${32 - dx}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${32 + dx}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${33 - dx}" cy="${y - 1}" r="${r / 3}" fill="#fff"/><circle cx="${33 + dx}" cy="${y - 1}" r="${r / 3}" fill="#fff"/>`;
+const blush = (y = 41, dx = 12) => `<ellipse cx="${32 - dx}" cy="${y}" rx="3.4" ry="2.1" fill="#ff7f98" opacity=".5"/><ellipse cx="${32 + dx}" cy="${y}" rx="3.4" ry="2.1" fill="#ff7f98" opacity=".5"/>`;
+const smile = (y = 42) => `<path d="M29 ${y} q3 3 6 0" stroke="${INK}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`;
+const catMouth = (y = 42) => `<path d="M28.5 ${y} q1.75 2.6 3.5 0 q1.75 2.6 3.5 0" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+const BUDDIES = {
+  cat: { name: 'Cat', svg:
+    `<path d="M13 28 L16 8 L30 18 Z" fill="#8e98a6"/><path d="M51 28 L48 8 L34 18 Z" fill="#8e98a6"/><path d="M17 23 L18.5 13 L25 18 Z" fill="#ffb3c1"/><path d="M47 23 L45.5 13 L39 18 Z" fill="#ffb3c1"/>
+     <circle cx="32" cy="36" r="20" fill="#9aa4b2"/><path d="M26 18 q6 4 12 0" stroke="#7b8594" stroke-width="2" fill="none"/>
+     ${eyes()}${blush()}<path d="M30.5 39 h3 l-1.5 1.8 z" fill="#ff8fa3"/>${catMouth(41)}
+     <path d="M10 38 h9 M10 43 l9 -2 M54 38 h-9 M54 43 l-9 -2" stroke="#6f7886" stroke-width="1.2" stroke-linecap="round"/>` },
+  pup: { name: 'Pup', svg:
+    `<circle cx="32" cy="36" r="20" fill="#e2ad70"/>
+     <ellipse cx="14" cy="33" rx="6.5" ry="13" fill="#8c5b38" transform="rotate(18 14 33)"/><ellipse cx="50" cy="33" rx="6.5" ry="13" fill="#8c5b38" transform="rotate(-18 50 33)"/>
+     <circle cx="41" cy="30" r="5" fill="#c98d52" opacity=".7"/><ellipse cx="32" cy="44" rx="9.5" ry="7" fill="#f7dfbf"/>
+     ${eyes(34)}<ellipse cx="32" cy="41" rx="3.4" ry="2.4" fill="${INK}"/>${smile(45)}<ellipse cx="32" cy="49" rx="2" ry="2.5" fill="#ff8fa3"/>` },
+  bunny: { name: 'Bunny', svg:
+    `<ellipse cx="24" cy="14" rx="5.5" ry="13" fill="#f6eee9" stroke="#e3cfc1" stroke-width="1.5"/><ellipse cx="24" cy="15" rx="2.4" ry="9" fill="#ffc2cf"/>
+     <ellipse cx="40" cy="14" rx="5.5" ry="13" fill="#f6eee9" stroke="#e3cfc1" stroke-width="1.5"/><ellipse cx="40" cy="15" rx="2.4" ry="9" fill="#ffc2cf"/>
+     <circle cx="32" cy="38" r="19" fill="#f6eee9" stroke="#e3cfc1" stroke-width="1.5"/>
+     ${eyes(37)}${blush(43)}<ellipse cx="32" cy="42" rx="2" ry="1.4" fill="#ff8fa3"/>${catMouth(44)}` },
+  fox: { name: 'Fox', svg:
+    `<path d="M12 30 L14 8 L29 19 Z" fill="#ec7a35"/><path d="M52 30 L50 8 L35 19 Z" fill="#ec7a35"/><path d="M14 13 L14 8 L19 12 Z" fill="#3a2418"/><path d="M50 13 L50 8 L45 12 Z" fill="#3a2418"/>
+     <circle cx="32" cy="36" r="20" fill="#ec7a35"/>
+     <path d="M12 37 Q22 31 32 40 Q42 31 52 37 Q48 56 32 56 Q16 56 12 37 Z" fill="#fff4ea"/>
+     ${eyes(34)}<ellipse cx="32" cy="42" rx="2.8" ry="2" fill="${INK}"/>${smile(45)}` },
+  bear: { name: 'Bear', svg:
+    `<circle cx="16" cy="20" r="7.5" fill="#a36f47"/><circle cx="48" cy="20" r="7.5" fill="#a36f47"/><circle cx="16" cy="20" r="3.8" fill="#dca77c"/><circle cx="48" cy="20" r="3.8" fill="#dca77c"/>
+     <circle cx="32" cy="36" r="20" fill="#a36f47"/><ellipse cx="32" cy="43" rx="9.5" ry="7.5" fill="#e6c49f"/>
+     ${eyes(33)}${blush(40, 13)}<ellipse cx="32" cy="40" rx="3.4" ry="2.4" fill="${INK}"/>${smile(44)}` },
+  panda: { name: 'Panda', svg:
+    `<circle cx="16" cy="20" r="7.5" fill="#2e2a2b"/><circle cx="48" cy="20" r="7.5" fill="#2e2a2b"/>
+     <circle cx="32" cy="36" r="20" fill="#fbfbfb" stroke="#e0dada" stroke-width="1.5"/>
+     <ellipse cx="24" cy="35" rx="5.5" ry="7" fill="#2e2a2b" transform="rotate(-28 24 35)"/><ellipse cx="40" cy="35" rx="5.5" ry="7" fill="#2e2a2b" transform="rotate(28 40 35)"/>
+     <circle cx="24.5" cy="34.5" r="2.3" fill="#fff"/><circle cx="39.5" cy="34.5" r="2.3" fill="#fff"/><circle cx="25" cy="35" r="1.2" fill="${INK}"/><circle cx="39" cy="35" r="1.2" fill="${INK}"/>
+     ${blush(44, 13)}<ellipse cx="32" cy="42" rx="2.8" ry="2" fill="${INK}"/>${smile(45)}` },
+  owl: { name: 'Owl', svg:
+    `<path d="M14 24 L13 10 L24 18 Z" fill="#7b5aa6"/><path d="M50 24 L51 10 L40 18 Z" fill="#7b5aa6"/>
+     <circle cx="32" cy="36" r="20" fill="#8d6bb8"/><ellipse cx="32" cy="46" rx="11" ry="8" fill="#c7b2e4"/>
+     <circle cx="24" cy="33" r="7.5" fill="#fff"/><circle cx="40" cy="33" r="7.5" fill="#fff"/>
+     <circle cx="24.5" cy="33.5" r="3.6" fill="${INK}"/><circle cx="39.5" cy="33.5" r="3.6" fill="${INK}"/><circle cx="25.5" cy="32.3" r="1.2" fill="#fff"/><circle cx="40.5" cy="32.3" r="1.2" fill="#fff"/>
+     <path d="M29 40 L35 40 L32 45 Z" fill="#f6a623"/>` },
+  frog: { name: 'Frog', svg:
+    `<circle cx="21" cy="24" r="9" fill="#7cc26b"/><circle cx="43" cy="24" r="9" fill="#7cc26b"/>
+     <ellipse cx="32" cy="40" rx="23" ry="16" fill="#7cc26b"/>
+     <circle cx="21" cy="23" r="5.5" fill="#fff"/><circle cx="43" cy="23" r="5.5" fill="#fff"/><circle cx="21.5" cy="23.5" r="2.8" fill="${INK}"/><circle cx="42.5" cy="23.5" r="2.8" fill="${INK}"/>
+     ${blush(43, 15)}<path d="M22 42 q10 8 20 0" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` },
+  dragon: { name: 'Dragon', svg:
+    `<path d="M20 22 L15 5 L28 17 Z" fill="#ffd166"/><path d="M44 22 L49 5 L36 17 Z" fill="#ffd166"/>
+     <path d="M27 17 L32 9 L37 17 Z" fill="#2d9483"/>
+     <circle cx="32" cy="37" r="20" fill="#3fb3a0"/><ellipse cx="32" cy="46" rx="11" ry="7.5" fill="#9fe0c9"/>
+     <path d="M12 38 l-6 -3 l3 6 Z M52 38 l6 -3 l-3 6 Z" fill="#2d9483"/>
+     ${eyes(34)}${blush(40, 13)}<circle cx="29" cy="45" r="1.2" fill="#236e62"/><circle cx="35" cy="45" r="1.2" fill="#236e62"/>${smile(48)}` },
+  unicorn: { name: 'Unicorn', svg:
+    `<circle cx="17" cy="24" r="7" fill="#ff9ecf"/><circle cx="13" cy="33" r="6" fill="#b69cff"/><circle cx="15" cy="42" r="5" fill="#8fd3ff"/>
+     <path d="M20 22 L19 12 L27 18 Z" fill="#fbf5ff" stroke="#e5d8f2" stroke-width="1.2"/><path d="M44 22 L45 12 L37 18 Z" fill="#fbf5ff" stroke="#e5d8f2" stroke-width="1.2"/>
+     <circle cx="33" cy="37" r="19" fill="#fbf5ff" stroke="#e5d8f2" stroke-width="1.5"/>
+     <path d="M33 2 L28.5 19 L37.5 19 Z" fill="#ffc94d"/><path d="M30 13 l6 -2 M29.5 16.5 l7 -2 M31 9.5 l4 -1.5" stroke="#e59f1f" stroke-width="1.1"/>
+     <circle cx="24" cy="22" r="5" fill="#ff9ecf"/>
+     ${eyes(36)}${blush(42)}${smile(43)}` },
+  ghost: { name: 'Ghost', svg:
+    `<path d="M14 32 A18 18 0 0 1 50 32 V54 q-3 4 -6 0 q-3 -4 -6 0 q-3 4 -6 0 q-3 -4 -6 0 q-3 4 -6 0 Z" fill="#fbfbff" stroke="#d6d0e6" stroke-width="1.5"/>
+     <ellipse cx="25" cy="32" rx="3" ry="4" fill="${INK}"/><ellipse cx="39" cy="32" rx="3" ry="4" fill="${INK}"/><circle cx="26" cy="30.5" r="1" fill="#fff"/><circle cx="40" cy="30.5" r="1" fill="#fff"/>
+     ${blush(39, 13)}<ellipse cx="32" cy="41" rx="2.6" ry="3" fill="${INK}"/>` },
+  robot: { name: 'Robot', svg:
+    `<path d="M32 16 V8" stroke="#6d8fb3" stroke-width="2.5"/><circle cx="32" cy="7" r="3.5" fill="#ff6b6b"/>
+     <rect x="7" y="31" width="5" height="12" rx="2" fill="#6d8fb3"/><rect x="52" y="31" width="5" height="12" rx="2" fill="#6d8fb3"/>
+     <rect x="11" y="16" width="42" height="38" rx="11" fill="#9fc0e0"/><rect x="16" y="23" width="32" height="22" rx="7" fill="#2a3a4f"/>
+     <circle cx="25" cy="33" r="3.2" fill="#7ff0ff"/><circle cx="39" cy="33" r="3.2" fill="#7ff0ff"/><path d="M28.5 38.5 q3.5 3 7 0" stroke="#7ff0ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+     <circle cx="18" cy="50" r="1.6" fill="#6d8fb3"/><circle cx="46" cy="50" r="1.6" fill="#6d8fb3"/>` },
+};
+const DEFAULT_BUDDY = 'fox';
+// v0.5 — outfits. Each buddy has anchor points so items sit on the head, eyes and neck.
+// top: where a hat rests · eye: eye line · dx: half the eye spacing · neck: chin line
+const ANCHOR = {
+  cat: { top: 17, eye: 35, dx: 7, neck: 54 },   pup: { top: 17, eye: 34, dx: 7, neck: 54 },
+  bunny: { top: 20, eye: 37, dx: 7, neck: 55 }, fox: { top: 17, eye: 34, dx: 7, neck: 54 },
+  bear: { top: 17, eye: 33, dx: 7, neck: 54 },  panda: { top: 17, eye: 34.5, dx: 7.5, neck: 54 },
+  owl: { top: 17, eye: 33.5, dx: 7.5, neck: 54 }, frog: { top: 17, eye: 23.5, dx: 10.5, neck: 54 },
+  dragon: { top: 18, eye: 34, dx: 7, neck: 55 }, unicorn: { top: 19, eye: 36, dx: 7, neck: 54, hornOver: true },
+  ghost: { top: 15, eye: 32, dx: 7, neck: 47 }, robot: { top: 17, eye: 33, dx: 7, neck: 53 },
+};
+const ACCESSORIES = {
+  beanie:   { slot: 'head', name: 'Beanie',  draw: (a) => { const t = a.top; return `<path d="M19 ${t + 3} a13 11.5 0 0 1 26 0 z" fill="#3d8bd3"/><path d="M24 ${t - 5} v7 M29 ${t - 7.5} v9 M35 ${t - 7.5} v9 M40 ${t - 5} v7" stroke="#2f73b3" stroke-width="1.4"/><rect x="17.5" y="${t + 0.5}" width="29" height="5.5" rx="2.7" fill="#2a66a3"/><circle cx="32" cy="${t - 9.5}" r="3.4" fill="#f4f1ee"/>`; } },
+  crown:    { slot: 'head', name: 'Crown',   draw: (a) => { const t = a.top; return `<path d="M21 ${t + 2} L20.5 ${t - 8} L26.5 ${t - 2.5} L32 ${t - 11} L37.5 ${t - 2.5} L43.5 ${t - 8} L43 ${t + 2} Z" fill="#ffc83d" stroke="#e3a106" stroke-width="1.2" stroke-linejoin="round"/><circle cx="32" cy="${t - 2}" r="1.8" fill="#e8475f"/><circle cx="25.5" cy="${t - 0.5}" r="1.3" fill="#4cc9f0"/><circle cx="38.5" cy="${t - 0.5}" r="1.3" fill="#4cc9f0"/>`; } },
+  flowers:  { slot: 'head', name: 'Flower crown', draw: (a) => { const t = a.top; const f = (x, y, c) => `<g transform="translate(${x} ${y})"><circle r="2.3" cx="0" cy="-2" fill="${c}"/><circle r="2.3" cx="1.9" cy="-0.6" fill="${c}"/><circle r="2.3" cx="1.2" cy="1.7" fill="${c}"/><circle r="2.3" cx="-1.2" cy="1.7" fill="${c}"/><circle r="2.3" cx="-1.9" cy="-0.6" fill="${c}"/><circle r="1.4" fill="#ffd166"/></g>`; return `<path d="M17 ${t + 3} Q32 ${t - 5} 47 ${t + 3}" stroke="#5cae5a" stroke-width="2" fill="none"/>` + f(19, t + 1.5, '#ff8fb1') + f(25.5, t - 1.5, '#fff') + f(32, t - 2.5, '#b69cff') + f(38.5, t - 1.5, '#fff') + f(45, t + 1.5, '#ff8fb1'); } },
+  partyhat: { slot: 'head', name: 'Party hat', draw: (a) => { const t = a.top; return `<path d="M25.5 ${t + 2} L33 ${t - 16} L40.5 ${t + 2} Z" fill="#7c5cff"/><circle cx="30" cy="${t - 3}" r="1.4" fill="#ffd166"/><circle cx="35" cy="${t - 7}" r="1.4" fill="#ff8fb1"/><circle cx="33.5" cy="${t - 0.5}" r="1.4" fill="#4cc9f0"/><circle cx="33" cy="${t - 16.5}" r="2.8" fill="#ffd166"/>`; } },
+  wizard:   { slot: 'head', name: 'Wizard hat', draw: (a) => { const t = a.top; return `<path d="M24.5 ${t + 1} Q30 ${t - 12} 36 ${t - 21} Q37 ${t - 10} 40 ${t + 1} Z" fill="#5b47a8"/><ellipse cx="32" cy="${t + 1.5}" rx="15" ry="3.4" fill="#45358a"/><path d="M33 ${t - 9} l1 2.2 2.4 .3 -1.8 1.6 .5 2.4 -2.1 -1.2 -2.1 1.2 .5 -2.4 -1.8 -1.6 2.4 -.3z" fill="#ffd166"/>`; } },
+  sunglasses: { slot: 'face', name: 'Sunglasses', draw: (a) => { const y = a.eye, dx = a.dx, w = dx >= 10 ? 13 : 11; return `<rect x="${32 - dx - w / 2}" y="${y - 4.2}" width="${w}" height="8" rx="3.2" fill="#1f1d2b"/><rect x="${32 + dx - w / 2}" y="${y - 4.2}" width="${w}" height="8" rx="3.2" fill="#1f1d2b"/><path d="M${32 - dx + w / 2} ${y - 1.5} Q32 ${y - 3.5} ${32 + dx - w / 2} ${y - 1.5}" stroke="#1f1d2b" stroke-width="1.6" fill="none"/><path d="M${32 - dx - 3} ${y - 2} l2.5 -1.2 M${32 + dx - 3} ${y - 2} l2.5 -1.2" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>`; } },
+  scarf:    { slot: 'neck', name: 'Scarf', draw: (a) => { const c = a.neck; return `<path d="M17.5 ${c - 4} Q32 ${c + 2.5} 46.5 ${c - 4} L46.5 ${c + 1.5} Q32 ${c + 8} 17.5 ${c + 1.5} Z" fill="#e2463b"/><path d="M20 ${c - 1.5} Q32 ${c + 4.5} 44 ${c - 1.5}" stroke="#fff" stroke-width="1" stroke-dasharray="2 2" fill="none" opacity=".6"/><rect x="37" y="${c + 1}" width="5.5" height="9" rx="2" fill="#c7362c" transform="rotate(-14 39.7 ${c + 1})"/>`; } },
+  bowtie:   { slot: 'neck', name: 'Bow tie', draw: (a) => { const c = a.neck; return `<path d="M32 ${c} L24.5 ${c - 4.5} Q23 ${c} 24.5 ${c + 4.5} Z M32 ${c} L39.5 ${c - 4.5} Q41 ${c} 39.5 ${c + 4.5} Z" fill="#e2463b"/><rect x="29.8" y="${c - 2.3}" width="4.4" height="4.6" rx="1.4" fill="#b8302a"/>`; } },
+};
+const TRAIL_STYLES = { dots: 'Dots', footprints: 'Footprints', paws: 'Paw prints', sparkles: 'Sparkles', rainbow: 'Rainbow' };
+// v0.6 — weather look. The server sends { kind, tempC, isDay } for the sender's rough location.
+// Weather only fills empty outfit slots (your own outfit always wins), plus an umbrella or snowflakes.
+function weatherOutfit(outfit, wx) {
+  const o = { ...(outfit || {}) };
+  if (!wx) return { o, extra: '' };
+  const wet = wx.kind === 'rain' || wx.kind === 'storm';
+  if (!o.face && wx.kind === 'clear' && wx.isDay && wx.tempC >= 20) o.face = 'sunglasses'; // v0.6.1: 20 °C / 68 °F (was 22, right at a sunny 72 °F)
+  if (!o.neck && (wx.tempC <= 5 || wx.kind === 'snow')) o.neck = 'scarf';
+  let extra = '';
+  if (wet) extra = 'umbrella';
+  else if (wx.kind === 'snow') extra = 'snow';
+  return { o, extra };
+}
+const WX_EXTRA = {
+  // An umbrella held over the head: canopy above the hat line, handle down the right side.
+  umbrella: (a) => { const t = a.top - 12; return `<g class="wx-umbrella"><path d="M53 ${t + 4} V58 q0 4 -3.6 4 q-3 0 -3 -3" stroke="#6b5a50" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M6 ${t + 4} Q9 ${t - 18} 32 ${t - 19} Q55 ${t - 18} 58 ${t + 4} Q52.5 ${t - 1} 47 ${t + 4} Q41.5 ${t - 1} 36.5 ${t + 4} Q32 ${t - 1} 27.5 ${t + 4} Q22.5 ${t - 1} 17 ${t + 4} Q11.5 ${t - 1} 6 ${t + 4} Z" fill="#3d8bd3"/><path d="M32 ${t - 19} Q24 ${t - 10} 27.5 ${t + 4} M32 ${t - 19} Q40 ${t - 10} 36.5 ${t + 4}" stroke="#2f73b3" stroke-width="1.2" fill="none"/><circle cx="32" cy="${t - 20}" r="1.8" fill="#2f73b3"/></g>`; },
+  snow: () => { const f = (x, y, r) => `<g transform="translate(${x} ${y})" stroke="#9cc9ee" stroke-width="1.2" stroke-linecap="round"><path d="M0 -${r} V${r} M-${r} 0 H${r} M-${r * .7} -${r * .7} L${r * .7} ${r * .7} M-${r * .7} ${r * .7} L${r * .7} -${r * .7}"/></g>`; return `<g class="wx-snow">${f(6, 12, 3)}${f(58, 20, 2.6)}${f(9, 44, 2.2)}${f(57, 48, 3)}</g>`; },
+};
+function buddyInner(id, outfit, wx) {
+  const key = BUDDIES[id] ? id : DEFAULT_BUDDY;
+  const a = ANCHOR[key];
+  let s = BUDDIES[key].svg;
+  const { o, extra } = weatherOutfit(outfit, wx);
+  for (const slot of ['neck', 'face', 'head']) {
+    const item = ACCESSORIES[o[slot]];
+    if (item && item.slot === slot) s += item.draw(a);
+  }
+  if (a.hornOver && o.head && ACCESSORIES[o.head]) s += `<path d="M33 2 L28.5 19 L37.5 19 Z" fill="#ffc94d"/><path d="M30 13 l6 -2 M29.5 16.5 l7 -2 M31 9.5 l4 -1.5" stroke="#e59f1f" stroke-width="1.1"/>`;
+  if (extra) s += WX_EXTRA[extra](a);
+  return s;
+}
+function buddySvg(id, outfit, wx) { return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">${buddyInner(id, outfit, wx)}</svg>`; }
+function paintBuddy(el, id, outfit, wx) { if (el) el.innerHTML = buddySvg(id, outfit, wx); }
+const FAHRENHEIT = /^en-(US|LR|MM)$/i.test(navigator.language || '') || (navigator.language || '').toLowerCase() === 'en';
+function wxChip(wx) {
+  if (!wx) return '';
+  const icon = { clear: wx.isDay ? '☀️' : '🌙', cloud: '☁️', fog: '🌫️', rain: '🌧️', storm: '⛈️', snow: '❄️' }[wx.kind] || '🌡️';
+  const temp = FAHRENHEIT ? `${Math.round(wx.tempC * 9 / 5 + 32)}°F` : `${wx.tempC}°C`;
+  const word = { clear: wx.isDay ? 'Sunny' : 'Clear', cloud: 'Cloudy', fog: 'Foggy', rain: 'Rain', storm: 'Storms', snow: 'Snow' }[wx.kind] || '';
+  return `<span class="wx" title="Weather where they are">${icon} ${temp}${word ? ' · ' + word : ''}</span>`;
+}
+// v0.6.1 — the Right now bubble on the map: status (or "Here") and the end time. Escaped.
+function statusBubble(sh) { return sh && sh.mode === 'now' ? `${esc(sh.note || 'Here')}<small>${esc(tillClock(sh.expiresAt))}</small>` : ''; }
+// End time as a clock, e.g. "till 7:05 PM".
+function tillClock(ts) { try { return 'till ' + new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch { return ''; } }
+
+// v0.5 — badges. Only earned badges are shown by name; the rest stay a surprise.
+const BADGE_INFO = {
+  first_steps:    { name: 'First Steps',    icon: '👣', how: () => 'Your first share' },
+  out_and_about:  { name: 'Out and About',  icon: '🎒', how: () => '10 shares' },
+  trailblazer:    { name: 'Trailblazer',    icon: '🥾', how: () => IMPERIAL ? '6 miles traveled while sharing' : '10 km traveled while sharing' },
+  marathon:       { name: 'Marathon',       icon: '🏅', how: () => IMPERIAL ? '26.2 miles traveled while sharing' : '42.2 km traveled while sharing' },
+  coast_to_coast: { name: 'Coast to Coast', icon: '🗺️', how: () => IMPERIAL ? '2,800 miles traveled while sharing' : '4,500 km traveled while sharing' },
+  on_call:        { name: 'On Call',        icon: '📣', how: () => 'Answered 5 update requests' },
+  popular:        { name: 'Popular',        icon: '👀', how: () => 'Watched 25 times' },
+  my_people:      { name: 'My People',      icon: '🫶', how: () => 'Shared with 5 different people' },
+  regular:        { name: 'Regular',        icon: '🔥', how: () => 'A 4-week sharing streak' },
+  night_owl:      { name: 'Night Owl',      icon: 'night', how: () => 'Shared late at night' },
+  early_bird:     { name: 'Early Bird',     icon: '🌅', how: () => 'Shared at the crack of dawn' },
+  mutual:         { name: 'Mutual',         icon: '🔁', how: () => 'Shared back with 5 people' },
+  connector:      { name: 'Connector',      icon: '🤝', how: () => '3 friends joined through your links' },
+};
+function rewardName(r) {
+  if (!r) return '';
+  if (r.kind === 'trail') return `${TRAIL_STYLES[r.id] || r.id} trail`;
+  if (r.kind === 'icon') return 'Night fox app icon';
+  return ACCESSORIES[r.id]?.name || r.id;
+}
+function medalHtml(id, cls = '') {
+  const info = BADGE_INFO[id] || { icon: '🏅' };
+  if (info.icon === 'night') return `<span class="medal night ${cls}"><img src="neerly-assets/mark-night.svg" alt="" style="width:58%;height:74%"></span>`;
+  return `<span class="medal ${cls}">${info.icon}</span>`;
+}
+function renderBuddyGrid(box, selected, onPick) {
+  box.innerHTML = Object.entries(BUDDIES).map(([id, b]) =>
+    `<button type="button" data-buddy="${id}" class="${id === selected ? 'on' : ''}" aria-pressed="${id === selected}">${buddySvg(id)}${b.name}</button>`).join('');
+  box.onclick = (e) => {
+    const btn = e.target.closest('[data-buddy]'); if (!btn) return;
+    $$('[data-buddy]', box).forEach(x => { const on = x === btn; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+    onPick(btn.dataset.buddy);
+  };
+}
+
+// Units: miles/feet where people use them, otherwise km/m.
+const IMPERIAL = /^en-(US|GB|LR|MM)$/i.test(navigator.language || '') || (navigator.language || '').toLowerCase() === 'en';
+function fmtDist(m) {
+  m = Math.max(0, m || 0);
+  if (IMPERIAL) {
+    const mi = m / 1609.344;
+    if (mi < 0.1) return `${Math.round(m * 3.28084 / 10) * 10} ft`;
+    return mi < 10 ? `${mi.toFixed(1)} mi` : `${Math.round(mi).toLocaleString()} mi`;
+  }
+  if (m < 1000) return `${Math.round(m / 10) * 10} m`;
+  return m < 10000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m / 1000).toLocaleString()} km`;
+}
+function fmtMins(min) {
+  if (!min || min < 0.5) return '<1 min';
+  min = Math.round(min);
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  return m && h < 10 ? `${h} h ${m} min` : `${h} h`;
+}
+
+// Trail sync: the server sends only new points (from index `t`); a slice from 0 replaces.
+function mergeTrail(local, resp) {
+  if (!resp || !Array.isArray(resp.trail)) return { trail: local, changed: false, reset: false };
+  if (resp.trailFrom === 0) return { trail: resp.trail.slice(), changed: true, reset: true };
+  if (resp.trailFrom === local.length) return { trail: local.concat(resp.trail), changed: resp.trail.length > 0, reset: false };
+  return { trail: [], changed: false, reset: false }; // out of step: next request asks for the whole trail
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API
+// ─────────────────────────────────────────────────────────────────────────────
+class ApiError extends Error { constructor(status, msg, body) { super(msg); this.status = status; this.body = body; } }
+
+async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (S.session?.token) headers.Authorization = 'Bearer ' + S.session.token;
+  // The relay sleeps when idle (Render free tier). Tell people why the first call is slow.
+  const slow = setTimeout(() => toast('Waking things up… one moment', 8000), 3500);
+  let res;
+  try {
+    res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  } catch {
+    throw new ApiError(0, navigator.onLine ? 'Can’t reach Neerly right now. Try again in a moment.' : 'You’re offline.');
+  } finally {
+    clearTimeout(slow);
+    if ($('#toast').textContent.startsWith('Waking')) $('#toast').classList.remove('on');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (data.serverNow) S.offset = data.serverNow - Date.now();
+  if (res.status === 401 && S.session && !path.startsWith('/neerly/auth/')) { signOutLocal(); throw new ApiError(401, 'Please sign in again'); }
+  if (!res.ok) throw new ApiError(res.status, data.error || 'Something went wrong', data);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Maps — OpenStreetMap (Leaflet) by default, Google Maps if MAPS_API_KEY is set
+// ─────────────────────────────────────────────────────────────────────────────
+let googleReady = null;
+function loadGoogle() {
+  if (!googleReady) googleReady = new Promise((resolve, reject) => {
+    window.__neerlyMapsReady = resolve;
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(MAPS_API_KEY)}&callback=__neerlyMapsReady&loading=async`;
+    s.async = true; s.onerror = reject; document.head.appendChild(s);
+  });
+  return googleReady;
+}
+
+// createMap(el, recenterBtn, buddyId, look) → { set(lat,lng,acc), setTrail(points), setWeather(wx), destroy() }
+// The buddy (in its outfit, dressed for the weather) is the marker. On my way shows everywhere it has been
+// during this share, drawn in the sender's trail style. Right now (look.here) is a pin with a soft pulse, no trail.
+const TRAIL_COLOR = '#e85d26';
+async function createMap(el, recenterBtn, buddyId, look = {}) {
+  const outfit = look.outfit || {};
+  const trailStyle = TRAIL_STYLES[look.trail] ? look.trail : 'dots';
+  const here = !!look.here;
+  let wx = look.weather || null;
+  let bubble = look.bubble || '';   // v0.6.1: Right now speech bubble (escaped HTML)
+  let follow = true;
+  const setFollow = (v) => { follow = v; if (recenterBtn) recenterBtn.style.display = v ? 'none' : 'block'; };
+  let last = null;
+  const moved = (a, b) => !a || Math.abs(a.lat - b.lat) + Math.abs(a.lng - b.lng) > 0.00004;
+
+  if (MAPS_API_KEY) {
+    try {
+      await loadGoogle();
+      const g = google.maps;
+      const map = new g.Map(el, { zoom: 15, center: { lat: 0, lng: 0 }, disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy' });
+      const pinIcon = () => ({ url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" overflow="visible"><circle cx="48" cy="48" r="44" fill="#fff" stroke="${TRAIL_COLOR}" stroke-width="6"/><svg x="14" y="14" width="68" height="68" viewBox="0 0 64 64" overflow="visible">${buddyInner(buddyId, outfit, wx)}</svg></svg>`), scaledSize: new g.Size(48, 48), anchor: new g.Point(24, 24) });
+      const marker = new g.Marker({ map, visible: false, zIndex: 10, icon: pinIcon() });
+      const circle = new g.Circle({ map, visible: false, fillColor: TRAIL_COLOR, fillOpacity: .12, strokeColor: TRAIL_COLOR, strokeOpacity: .35, strokeWeight: 1 });
+      const line = new g.Polyline({ map, path: [], strokeColor: TRAIL_COLOR, strokeOpacity: .45, strokeWeight: 4 });
+      let placed = false;
+      map.addListener('dragstart', () => setFollow(false));
+      if (recenterBtn) recenterBtn.onclick = () => { setFollow(true); if (last) map.panTo(last); };
+      return {
+        set(lat, lng, acc) {
+          last = { lat, lng };
+          marker.setPosition(last); marker.setVisible(true);
+          if (acc) { circle.setCenter(last); circle.setRadius(acc); circle.setVisible(true); } else circle.setVisible(false);
+          if (!placed) { map.setCenter(last); map.setZoom(16); placed = true; } else if (follow) map.panTo(last);
+        },
+        setTrail(points) { if (!here) line.setPath(points.map(([a, b]) => ({ lat: a, lng: b }))); },
+        setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; marker.setIcon(pinIcon()); },
+        setBubble() {}, // Google Maps: the status stays in the header for now
+        destroy() { el.innerHTML = ''; },
+      };
+    } catch (e) { console.warn('Google Maps failed, falling back to OpenStreetMap', e); }
+  }
+
+  if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. Location updates still work.</div>'; return { set() {}, setTrail() {}, setWeather() {}, setBubble() {}, destroy() {} }; }
+  const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
+  map.attributionControl.setPrefix(false); // drop Leaflet's own link + flag; the OpenStreetMap credit (required by its licence) stays
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  const circle = L.circle([0, 0], { radius: 1, color: TRAIL_COLOR, weight: 1, opacity: .35, fillOpacity: .12, interactive: false });
+  const trail = here ? null : makeTrailLayer(map, trailStyle).addTo(map);
+  const pinIcon = () => L.divIcon({ className: 'bpin-wrap', html: `${here && bubble ? `<div class="map-bubble">${bubble}</div>` : ''}<div class="bpin${here ? ' here' : ''}">${buddySvg(buddyId, outfit, wx)}</div>`, iconSize: [48, 48], iconAnchor: [24, 24] });
+  const pin = L.marker([0, 0], { icon: pinIcon(), keyboard: false, zIndexOffset: 1000 });
+  let placed = false, walkT;
+  map.on('dragstart', () => setFollow(false));
+  if (recenterBtn) recenterBtn.onclick = () => { setFollow(true); if (last) map.panTo([last.lat, last.lng]); };
+  setTimeout(() => map.invalidateSize(), 50);
+  return {
+    set(lat, lng, acc) {
+      const next = { lat, lng };
+      const walking = placed && !here && moved(last, next);
+      last = next;
+      pin.setLatLng([lat, lng]); circle.setLatLng([lat, lng]).setRadius(acc || 1);
+      if (!placed) { circle.addTo(map); pin.addTo(map); map.setView([lat, lng], 16); placed = true; }
+      else if (follow) map.panTo([lat, lng]);
+      if (!acc) circle.setStyle({ opacity: 0, fillOpacity: 0 }); else circle.setStyle({ opacity: .35, fillOpacity: .12 });
+      if (walking) {  // little waddle when the buddy moves
+        const b = pin.getElement()?.querySelector('.bpin');
+        if (b) { b.classList.remove('walk'); void b.offsetWidth; b.classList.add('walk'); clearTimeout(walkT); walkT = setTimeout(() => b.classList.remove('walk'), 2100); }
+      }
+    },
+    setTrail(points) { if (trail) trail.setPoints(points); },
+    setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; pin.setIcon(pinIcon()); },
+    setBubble(html) { html = html || ''; if (html === bubble) return; bubble = html; pin.setIcon(pinIcon()); },
+    destroy() { map.remove(); },
+  };
+}
+
+// Trail layers (Leaflet). Dots and rainbow are lines. Footprints, paws and sparkles (v0.6) are a solid line
+// with marks on top, spaced evenly on screen (so a car trip isn't a scatter of far-apart prints) and
+// re-placed whenever the zoom changes. Marks turn to face the direction of travel.
+const FOOT = '<path d="M10 9.5C13.6 9.5 15.2 13 14.8 17.6 14.4 21.5 13.2 23.6 13.2 26.2 13.2 28.6 11.8 30 10 30 8 30 6.8 28.7 7 26.2 7.2 23.4 5.4 21 5.4 16.6 5.4 12.4 7 9.5 10 9.5Z"/><circle cx="6.6" cy="5.9" r="2.3"/><circle cx="10" cy="4.3" r="1.7"/><circle cx="12.8" cy="5" r="1.5"/><circle cx="15" cy="6.6" r="1.3"/><circle cx="16.4" cy="8.8" r="1.15"/>';
+const TRAIL_MARKS = {
+  footprints: { size: [20, 30], spacing: 36, svg: (i) => `<svg viewBox="0 0 20 30" width="20" height="30" fill="${TRAIL_COLOR}" opacity=".9"><g${i % 2 ? '' : ' transform="translate(20 0) scale(-1 1)"'}>${FOOT}</g></svg>` },
+  paws:       { size: [26, 26], spacing: 38, svg: () => `<svg viewBox="0 0 20 20" width="26" height="26" fill="${TRAIL_COLOR}" opacity=".9"><ellipse cx="10" cy="12.5" rx="4" ry="3.4"/><circle cx="5" cy="7.5" r="1.8"/><circle cx="8.2" cy="4.8" r="1.8"/><circle cx="11.8" cy="4.8" r="1.8"/><circle cx="15" cy="7.5" r="1.8"/></svg>` },
+  sparkles:   { size: [24, 24], spacing: 38, svg: (i) => { const r = i % 3 === 0 ? 8.5 : 6; return `<svg viewBox="0 0 20 20" width="24" height="24"><path d="M10 ${10 - r} Q${10 + r * .2} ${10 - r * .2} ${10 + r} 10 Q${10 + r * .2} ${10 + r * .2} 10 ${10 + r} Q${10 - r * .2} ${10 + r * .2} ${10 - r} 10 Q${10 - r * .2} ${10 - r * .2} 10 ${10 - r} Z" fill="${i % 2 ? '#ffc83d' : '#ff9ecf'}"/></svg>`; } },
+};
+const MAX_MARKS = 400;
+function makeTrailLayer(map, style) {
+  const group = L.layerGroup();
+  const lines = [];
+  if (style === 'rainbow') {
+    [['#ff6b6b', 13], ['#ffd166', 9], ['#4cc9f0', 5]].forEach(([c, w]) => lines.push(L.polyline([], { color: c, weight: w, opacity: .9, lineCap: 'round', lineJoin: 'round', interactive: false })));
+  } else if (style === 'dots') {
+    // Zero-length dashes with round caps draw as dots.
+    lines.push(L.polyline([], { color: TRAIL_COLOR, weight: 6, opacity: .85, dashArray: '0 12', lineCap: 'round', interactive: false }));
+  } else if (style === 'sparkles') {
+    lines.push(L.polyline([], { color: '#ffc83d', weight: 4, opacity: .8, lineCap: 'round', lineJoin: 'round', interactive: false, className: 'trail-line' }));
+  } else {
+    lines.push(L.polyline([], { color: TRAIL_COLOR, weight: 4, opacity: .7, lineCap: 'round', lineJoin: 'round', interactive: false, className: 'trail-line' }));
+  }
+  lines.forEach(l => group.addLayer(l));
+  const marks = L.layerGroup().addTo(group);
+  const spec = TRAIL_MARKS[style];
+  let pts = [];
+  function place() {
+    marks.clearLayers();
+    if (!spec || pts.length < 2) return;
+    const P = pts.map(p => map.latLngToLayerPoint(p));
+    let total = 0;
+    for (let i = 1; i < P.length; i++) total += P[i].distanceTo(P[i - 1]);
+    if (total < 4) return;
+    const gap = Math.max(spec.spacing, total / MAX_MARKS);
+    const endClear = 20; // the buddy sits on the last point; don't bury prints under it
+    let seg = 1, segStart = 0, n = 0;
+    for (let d = gap / 2; d < total - endClear; d += gap, n++) {
+      while (seg < P.length - 1 && segStart + P[seg].distanceTo(P[seg - 1]) < d) { segStart += P[seg].distanceTo(P[seg - 1]); seg++; }
+      const a = P[seg - 1], b = P[seg], len = a.distanceTo(b) || 1;
+      const t = Math.min(1, (d - segStart) / len);
+      const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len;
+      let x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
+      if (style === 'footprints') { const side = n % 2 ? 1 : -1; x += -uy * 8 * side; y += ux * 8 * side; } // left, right, left…
+      const deg = Math.atan2(uy, ux) * 180 / Math.PI + 90; // marks are drawn pointing up
+      const rot = style === 'sparkles' ? 0 : deg;
+      const html = `<div style="transform:rotate(${rot.toFixed(1)}deg)">${spec.svg(n)}</div>`;
+      const [w, h] = spec.size;
+      marks.addLayer(L.marker(map.layerPointToLatLng([x, y]), { icon: L.divIcon({ className: `bpin-wrap tmark tm-${style}`, html, iconSize: [w, h], iconAnchor: [w / 2, h / 2] }), interactive: false, keyboard: false }));
+    }
+  }
+  group.setPoints = (p) => { pts = p || []; lines.forEach(l => l.setLatLngs(pts)); place(); };
+  map.on('zoomend viewreset', place);
+  return group;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth screens
+// ─────────────────────────────────────────────────────────────────────────────
+function signIn(data) {
+  S.session = { token: data.token, user: data.user };
+  store.set(SESSION_KEY, S.session);
+}
+function signOutLocal() { S.session = null; store.del(SESSION_KEY); }
+
+$$('[data-toggle-pw]').forEach(b => b.addEventListener('click', () => {
+  const i = b.previousElementSibling; const on = i.type === 'password';
+  i.type = on ? 'text' : 'password'; b.textContent = on ? 'Hide' : 'Show';
+}));
+
+$$('[data-go]').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); go(a.dataset.go); }));
+
+function go(where) {
+  if (where === 'signin') { cleanUrl(); show('signin'); }
+  else if (where === 'signup') { cleanUrl(); $('#signup-tag').textContent = 'Share where you are, for a little while.'; show('signup'); }
+  else if (where === 'forgot') {
+    $('#forgot-form').classList.remove('hidden'); $('#forgot-done').classList.add('hidden');
+    const em = $('#f-signin [name=email]').value; if (em) $('#f-forgot [name=email]').value = em;
+    show('forgot');
+  }
+  else if (where === 'share') { cleanUrl(); S.session ? openShare() : show('signin'); }
+  else if (where === 'profile') { S.session ? openProfile() : show('signin'); }
+}
+
+$('#f-signin').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const email = f.email.value.trim(), password = f.password.value;
+  if (!email || !password) return showErr(f, 'Add your email and password');
+  busy(btn, true);
+  try { signIn(await api('POST', '/neerly/auth/signin', { email, password })); f.reset(); await afterSignIn(); }
+  catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+$('#f-signup').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const name = f.name.value.trim(), email = f.email.value.trim(), password = f.password.value;
+  const username = f.username.value.trim().replace(/^@/, '');
+  if (!name) return showErr(f, 'Add your name — it’s what people see when you share');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  if (!username) return showErr(f, 'Pick a username');
+  if (password.length < 8) return showErr(f, 'Password needs at least 8 characters');
+  busy(btn, true);
+  try { signIn(await api('POST', '/neerly/auth/signup', { name, email, password, username, ref: refToken() })); f.reset(); f._uEdited = false; await afterSignIn(); }
+  catch (err) {
+    if (err.body?.field === 'username') usernameHint(f, err.body.suggestion ? `@${username} is taken` : err.message, 'bad', err.body.suggestion);
+    showErr(f, err.message);
+  }
+  finally { busy(btn, false); }
+});
+
+// ── Username field: suggested from the email, live duplicate check, editable ──
+function usernameHint(form, text, kind, suggestion) {
+  const h = $('[data-uhint]', form);
+  h.className = 'uhint' + (kind ? ' ' + kind : '');
+  h.innerHTML = esc(text) + (suggestion ? ` — <button type="button" data-use="${esc(suggestion)}">use @${esc(suggestion)}</button>` : '');
+}
+function wireUsername(form, { fromEmail }) {
+  const input = form.username;
+  let seq = 0, timer;
+  form.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-use]'); if (!b) return;
+    input.value = b.dataset.use; form._uEdited = true; check();
+  });
+  async function check() {
+    const u = input.value.trim().replace(/^@/, '');
+    if (!u) return usernameHint(form, '', '');
+    const my = ++seq;
+    try {
+      const d = await api('GET', `/neerly/username?u=${encodeURIComponent(u)}`);
+      if (my !== seq) return;
+      if (d.available) usernameHint(form, `✓ @${d.username} is yours`, 'good');
+      else usernameHint(form, d.problem, 'bad', d.suggestion && d.suggestion !== d.username ? d.suggestion : null);
+    } catch {}
+  }
+  form._checkUsername = check;
+  input.addEventListener('input', () => {
+    form._uEdited = true;
+    input.value = input.value.toLowerCase().replace(/\s/g, '');
+    clearTimeout(timer); timer = setTimeout(check, 350);
+  });
+  if (fromEmail) {
+    const suggest = async () => {
+      const em = form.email.value.trim();
+      if (form._uEdited || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return;
+      const my = ++seq;
+      try {
+        const d = await api('GET', `/neerly/username?email=${encodeURIComponent(em)}`);
+        if (my !== seq || form._uEdited) return;
+        input.value = d.suggestion;
+        usernameHint(form, `✓ @${d.suggestion} is free. Suggested from your email; change it if you like.`, 'good');
+      } catch {}
+    };
+    let et;
+    form.email.addEventListener('input', () => { clearTimeout(et); et = setTimeout(suggest, 500); });
+    form.email.addEventListener('blur', suggest);
+  }
+}
+wireUsername($('#f-signup'), { fromEmail: true });
+
+$('#f-forgot').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const email = f.email.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  busy(btn, true);
+  try {
+    await api('POST', '/neerly/auth/forgot', { email });
+    $('#forgot-email').textContent = email;
+    $('#forgot-form').classList.add('hidden'); $('#forgot-done').classList.remove('hidden');
+  } catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+$('#f-reset').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const password = f.password.value;
+  if (password.length < 8) return showErr(f, 'Password needs at least 8 characters');
+  busy(btn, true);
+  try {
+    signIn(await api('POST', '/neerly/auth/reset', { token: f.dataset.token, password }));
+    cleanUrl(); toast('Password updated — you’re signed in'); await afterSignIn();
+  } catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+async function afterSignIn() {
+  // If they arrived from a recipient link (share back / request flow), land on the share screen.
+  cleanUrl();
+  const me = await api('GET', '/neerly/me');
+  setMe(me);
+  if (me.activeShare) { S.share = me.activeShare; return goLive(); }
+  if (!me.user.avatar) return openBuddyPicker();   // new accounts (and pre-v0.4 ones) pick a buddy once
+  return openShare();
+}
+function refToken() { try { return sessionStorage.getItem('neerly_ref') || undefined; } catch { return undefined; } }
+function setMe(me) {
+  S.session.user = me.user; if (me.stats) S.stats = me.stats;
+  if (me.badges) S.badges = me.badges;
+  if (me.unlocked) S.unlocked = me.unlocked;
+  store.set(SESSION_KEY, S.session);
+  applyAppIcon(me.user.appIcon);
+}
+const myBuddy = () => S.session?.user?.avatar || DEFAULT_BUDDY;
+const myLook = () => ({ outfit: S.session?.user?.outfit || {}, trail: S.session?.user?.trailStyle || 'dots' });
+
+// v0.5 — alternate app icon. A web app can't change an installed icon, but Safari reads the
+// apple-touch-icon when you tap "Add to Home Screen", and the browser tab picks up the favicon.
+function applyAppIcon(icon) {
+  const night = icon === 'night';
+  try { localStorage.setItem('neerly_icon', night ? 'night' : 'classic'); } catch {}
+  const t = $('#touch-icon'); if (t) t.href = night ? 'neerly-assets/apple-touch-icon-night.png' : 'neerly-assets/apple-touch-icon.png';
+  const f = $('#fav-svg'); if (f) f.href = night ? 'neerly-assets/mark-night.svg' : 'neerly-assets/mark.svg';
+  const i = $('#p-install-icon'); if (i) i.src = t ? t.href : '';
+}
+
+// ── Badge celebrations: shown once, then marked seen ──
+async function celebrateNewBadges() {
+  const fresh = (S.badges?.earned || []).filter(b => !b.seen);
+  if (!fresh.length || S.celebrating) return;
+  S.celebrating = true;
+  for (const b of fresh) await celebrate(b);
+  S.celebrating = false;
+  try { const d = await api('POST', '/neerly/me/badges/seen'); S.badges = d.badges; } catch {}
+  if ($('#s-profile').classList.contains('on')) renderProfile();
+}
+function celebrate(b) {
+  return new Promise((resolve) => {
+    const info = BADGE_INFO[b.id] || { name: b.id, how: () => '' };
+    $('#cel-medal').outerHTML = medalHtml(b.id, 'big').replace('class="medal', 'id="cel-medal" class="medal');
+    $('#cel-name').textContent = info.name;
+    $('#cel-how').textContent = info.how();
+    const r = b.reward;
+    $('#cel-reward').innerHTML = r ? `🎁 Unlocked: <b>${esc(rewardName(r))}</b>. ${r.kind === 'icon' ? 'Switch to it in Edit profile.' : 'Try it on in Edit profile.'}` : '';
+    $('#celebrate').classList.add('on');
+    $('#cel-next').onclick = () => { $('#celebrate').classList.remove('on'); setTimeout(resolve, 150); };
+  });
+}
+
+// ── Add to Home Screen ──
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; if ($('#s-profile').classList.contains('on')) renderInstall(); });
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function renderInstall() {
+  const card = $('#p-install');
+  if (isStandalone()) { card.classList.add('hidden'); return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  $('#btn-install').classList.toggle('hidden', !installPrompt);
+  $('#p-install-how').textContent = installPrompt ? 'One tap, and it opens like an app.'
+    : ios ? 'In Safari, tap the Share button, then “Add to Home Screen”.'
+    : 'Open your browser menu and choose “Add to Home screen” or “Install app”.';
+  card.classList.remove('hidden');
+}
+$('#btn-install').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  try { await installPrompt.userChoice; } catch {}
+  installPrompt = null; renderInstall();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Buddy picker (first run)
+// ─────────────────────────────────────────────────────────────────────────────
+function openBuddyPicker() {
+  S.pickBuddy = null;
+  const btn = $('#btn-buddy-save'); btn.disabled = true; btn.textContent = 'Pick one';
+  $('#buddy-err').classList.remove('on');
+  renderBuddyGrid($('#buddy-grid'), null, (id) => { S.pickBuddy = id; btn.disabled = false; btn.textContent = `That’s me: ${BUDDIES[id].name}`; });
+  show('buddy');
+}
+$('#btn-buddy-save').addEventListener('click', async () => {
+  const btn = $('#btn-buddy-save'); if (!S.pickBuddy) return;
+  busy(btn, true);
+  try {
+    const d = await api('POST', '/neerly/me/profile', { avatar: S.pickBuddy });
+    S.session.user = d.user; store.set(SESSION_KEY, S.session);
+    toast(`Say hi to your ${BUDDIES[S.pickBuddy].name.toLowerCase()}!`);
+    openShare();
+  } catch (err) { const e = $('#buddy-err'); e.textContent = err.message; e.classList.add('on'); }
+  finally { busy(btn, false); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Profile, stats, account
+// ─────────────────────────────────────────────────────────────────────────────
+$('#btn-account').addEventListener('click', () => openProfile());
+
+async function openProfile() {
+  renderProfile();
+  show('profile');
+  try { setMe(await api('GET', '/neerly/me')); renderProfile(); } catch (err) { if (err.status === 401) show('signin'); }
+}
+function renderProfile() {
+  const u = S.session?.user; if (!u) return;
+  paintBuddy($('#p-buddy'), myBuddy(), myLook().outfit);
+  $('#p-name').textContent = u.name;
+  $('#p-handle').textContent = u.username ? '@' + u.username : '';
+  $('#p-email').textContent = 'Signed in as ' + u.email;
+  const st = S.stats || {};
+  const tile = (v, label) => `<div class="stile"><b>${esc(v)}</b><span>${esc(label)}</span></div>`;
+  const streak = st.streakWeeks || 0;
+  $('#p-stats').innerHTML =
+    tile(fmtDist(st.distanceM), 'traveled while sharing') +
+    tile((st.shares || 0).toLocaleString(), st.shares === 1 ? 'share' : 'shares') +
+    tile(fmtMins(st.minutesShared), 'shared in total') +
+    tile((st.people || 0).toLocaleString(), st.people === 1 ? 'person shared with' : 'people shared with') +
+    tile((st.timesWatched || 0).toLocaleString(), 'times watched') +
+    tile((st.requestsAnswered || 0).toLocaleString(), 'update requests answered') +
+    `<div class="stile wide"><span class="fire">${streak ? '🔥' : '🌱'}</span><div><b>${streak} week${streak === 1 ? '' : 's'}</b><span>${streak ? 'sharing streak' : 'Share this week to start a streak'}${st.bestStreak > streak ? ` · best ${st.bestStreak}` : ''}</span></div></div>`;
+  // Badge shelf: earned badges by name; the rest are a single mystery tile.
+  const bd = S.badges || { earned: [], total: 13 };
+  const left = Math.max(0, bd.total - bd.earned.length);
+  $('#p-badges').innerHTML = bd.earned.map(b => {
+    const info = BADGE_INFO[b.id] || { name: b.id };
+    const when = new Date(b.earnedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return `<div class="btile ${b.seen ? '' : 'new'}">${medalHtml(b.id)}<b>${esc(info.name)}</b><span>${esc(when)}</span></div>`;
+  }).join('') + (left ? `<div class="btile more"><span class="medal mystery">?</span><b>${left} more</b><span>to discover</span></div>` : '');
+  renderInstall();
+  setTimeout(celebrateNewBadges, 300);
+}
+$('#profile-back').addEventListener('click', (e) => { e.preventDefault(); S.share ? goLive() : openShare(); });
+
+$('#btn-edit-profile').addEventListener('click', () => openEditProfile());
+function openEditProfile() {
+  const f = $('#f-profile'), u = S.session.user;
+  showErr(f, ''); f.name.value = u.name; f.username.value = u.username || ''; usernameHint(f, '', '');
+  S.editBuddy = myBuddy();
+  const lk = myLook();
+  S.editLook = { outfit: { ...lk.outfit }, trail: lk.trail, icon: u.appIcon || 'classic' };
+  renderBuddyGrid($('#edit-buddy-grid'), S.editBuddy, (id) => { S.editBuddy = id; renderLookEditor(); });
+  renderLookEditor();
+  show('editprofile');
+}
+function renderLookEditor() {
+  const un = S.unlocked || { head: [], face: [], neck: [], trail: ['dots'], icon: ['classic'] };
+  const L = S.editLook;
+  paintBuddy($('#look-buddy'), S.editBuddy, L.outfit);
+  const chip = (group, val, label, on) => `<button type="button" class="chip ${on ? 'on' : ''}" data-g="${group}" data-v="${esc(val)}">${esc(label)}</button>`;
+  const slotRow = (slot, title) => {
+    if (!un[slot].length) return '';
+    return `<p class="look-label">${title}</p><div class="chips">${chip(slot, '', 'None', !L.outfit[slot])}${un[slot].map(id => chip(slot, id, ACCESSORIES[id]?.name || id, L.outfit[slot] === id)).join('')}</div>`;
+  };
+  let html = slotRow('head', 'On the head') + slotRow('face', 'On the face') + slotRow('neck', 'Around the neck');
+  html += `<p class="look-label">Trail</p><div class="chips">${un.trail.map(id => chip('trail', id, TRAIL_STYLES[id] || id, L.trail === id)).join('')}</div>`;
+  if (un.icon.includes('night')) html += `<p class="look-label">App icon</p><div class="chips">${chip('icon', 'classic', 'Classic fox', L.icon !== 'night')}${chip('icon', 'night', 'Night fox', L.icon === 'night')}</div>`;
+  const locked = !un.head.length && !un.face.length && !un.neck.length && un.trail.length === 1;
+  if (locked) html = `<p class="muted small center">Earn badges to unlock outfits, trail styles and more. Your first share gets you started.</p>` + html;
+  $('#look-body').innerHTML = html;
+}
+$('#look-body').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-g]'); if (!b) return;
+  const g = b.dataset.g, v = b.dataset.v, L = S.editLook;
+  if (g === 'trail') L.trail = v; else if (g === 'icon') L.icon = v; else L.outfit[g] = v || undefined;
+  renderLookEditor();
+});
+wireUsername($('#f-profile'), { fromEmail: false });
+$('#f-profile').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const name = f.name.value.trim(), username = f.username.value.trim().replace(/^@/, '');
+  if (!name) return showErr(f, 'Add your name');
+  if (!username) return showErr(f, 'Pick a username');
+  busy(btn, true);
+  try {
+    await api('POST', '/neerly/me/profile', { name, username, avatar: S.editBuddy });
+    const L = S.editLook, outfit = {};
+    for (const k of ['head', 'face', 'neck']) outfit[k] = L.outfit[k] || null;
+    const d = await api('POST', '/neerly/me/look', { outfit, trailStyle: L.trail, appIcon: L.icon });
+    S.session.user = d.user; store.set(SESSION_KEY, S.session); applyAppIcon(d.user.appIcon);
+    toast('Profile saved'); openProfile();
+  } catch (err) {
+    if (err.body?.field === 'username') usernameHint(f, err.body.suggestion ? `@${username} is taken` : err.message, 'bad', err.body.suggestion);
+    showErr(f, err.message);
+  } finally { busy(btn, false); }
+});
+
+$('#btn-pw').addEventListener('click', () => { const f = $('#f-password'); f.reset(); showErr(f, ''); show('password'); });
+$('#f-password').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  if (f.password.value.length < 8) return showErr(f, 'New password needs at least 8 characters');
+  busy(btn, true);
+  try { await api('POST', '/neerly/me/password', { current: f.current.value, password: f.password.value }); f.reset(); toast('Password changed'); openProfile(); }
+  catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+$('#btn-signout').addEventListener('click', () => {
+  modal('Sign out?', S.session?.user?.email || '', [
+    { label: 'Sign out', cls: 'btn-outline', fn: async () => { try { await api('POST', '/neerly/auth/signout'); } catch {} signOutLocal(); show('signin'); } },
+    { label: 'Cancel', cls: 'btn-ghost' },
+  ]);
+});
+
+$('#btn-delete').addEventListener('click', () => { const f = $('#f-delete'); f.reset(); showErr(f, ''); show('delete'); });
+$('#f-delete').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  if (!f.password.value) return showErr(f, 'Type your password to confirm');
+  busy(btn, true);
+  try {
+    await api('POST', '/neerly/me/delete', { password: f.password.value });
+    if (S.share) { clearTimers(); stopWatch(); releaseWakeLock(); S.share = null; }
+    signOutLocal(); f.reset(); show('signin'); toast('Your account is deleted');
+  } catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Share screen
+// ─────────────────────────────────────────────────────────────────────────────
+async function openShare() {
+  $('#me-name').textContent = S.session.user.name;
+  paintBuddy($('#me-buddy'), myBuddy(), myLook().outfit);
+  renderShareBack();
+  show('share');
+  S.editing = false; renderContacts(); updateShareHint();
+  try { const d = await api('GET', '/neerly/contacts'); S.contacts = d.contacts; renderContacts(); }
+  catch (err) { if (err.status !== 401) toast(err.message); else show('signin'); }
+}
+
+// v0.6 — two modes on one screen. On my way: live trail + optional destination.
+// Right now: a status, with the location switched on (a pin, no trail) or off (no map at all).
+const DURATIONS_BY_MODE = { way: [[15, '15', 'min'], [30, '30', 'min'], [60, '1', 'hour']], now: [[30, '30', 'min'], [60, '1', 'hour'], [120, '2', 'hours'], [240, '4', 'hours']] };
+const STATUS_CHIPS = ['☕ Grabbing coffee', '💪 At the gym', '💼 At work', '🍽️ Out for dinner', '🏠 Home', '📵 In a meeting'];
+function renderDurations() {
+  const box = $('#durations');
+  box.classList.toggle('four', S.mode === 'now');
+  S.minutes = S.minutesBy[S.mode];
+  box.innerHTML = DURATIONS_BY_MODE[S.mode].map(([m, big, small]) => `<button type="button" data-min="${m}" class="${m === S.minutes ? 'on' : ''}">${big}<small>${small}</small></button>`).join('');
+}
+$('#durations').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-min]'); if (!b) return;
+  S.minutes = S.minutesBy[S.mode] = Number(b.dataset.min);
+  $$('#durations button').forEach(x => x.classList.toggle('on', x === b));
+});
+function setMode(mode) {
+  S.mode = mode;
+  $$('#modes [data-mode]').forEach(b => { const on = b.dataset.mode === mode; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  const now = mode === 'now';
+  $('#share-title').textContent = now ? 'What’s up?' : 'On your way?';
+  $('#note-label').innerHTML = now ? 'What you’re up to' : 'Heading to <span class="muted" style="display:inline;font-weight:400">(optional)</span>';
+  $('#note-input').placeholder = now ? 'At the gym, Blue Bottle — come by!' : 'Grandma’s, the office, Blue Bottle…';
+  $('#status-chips').classList.toggle('hidden', !now);
+  $('#loc-row').classList.toggle('hidden', !now);
+  renderChips(); renderLocSwitch(); renderDurations(); renderShareBack();
+}
+$('#modes').addEventListener('click', (e) => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== S.mode) setMode(b.dataset.mode); });
+function renderChips() {
+  const v = $('#note-input').value.trim();
+  $('#status-chips').innerHTML = STATUS_CHIPS.map(c => `<button type="button" class="chip ${c === v ? 'on' : ''}" data-chip="${esc(c)}">${esc(c)}</button>`).join('');
+  $('#note-clear').classList.toggle('hidden', !v);
+}
+$('#status-chips').addEventListener('click', (e) => { const c = e.target.closest('[data-chip]'); if (!c) return; $('#note-input').value = c.dataset.chip; renderChips(); updateShareHint(); });
+$('#note-input').addEventListener('input', () => { renderChips(); updateShareHint(); });
+$('#note-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('#note-clear').addEventListener('click', () => { $('#note-input').value = ''; renderChips(); updateShareHint(); $('#note-input').focus(); });
+function renderLocSwitch() {
+  $('#loc-switch').classList.toggle('on', S.showLoc);
+  $('#loc-row').setAttribute('aria-checked', S.showLoc);
+  $('#loc-sub').textContent = S.showLoc ? 'A pin on the map, no trail' : 'Off: they’ll only see your status';
+  updateShareHint();
+}
+function toggleLoc() { S.showLoc = !S.showLoc; renderLocSwitch(); }
+$('#loc-row').addEventListener('click', toggleLoc);
+$('#loc-row').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLoc(); } });
+setMode('way');
+
+function renderContacts() {
+  const list = $('#contact-list');
+  $('#contacts').classList.toggle('editing', S.editing);
+  $('#btn-edit-contacts').classList.toggle('hidden', !S.contacts.length);
+  $('#btn-edit-contacts').textContent = S.editing ? 'Done' : 'Edit';
+  // drop selections for deleted contacts
+  for (const e of [...S.selected]) if (!S.contacts.some(c => c.email === e)) S.selected.delete(e);
+  if (!S.contacts.length) { list.innerHTML = '<div class="empty">No one saved yet. Add someone below — or skip it and just send the link.</div>'; return; }
+  list.innerHTML = S.contacts.map(c => `
+    <div class="contact ${S.selected.has(c.email) ? 'on' : ''}" role="button" tabindex="0" data-email="${esc(c.email)}">
+      <span class="check"></span>
+      <span class="avatar">${esc(initials(c))}</span>
+      <span class="who"><b>${esc(displayName(c))}</b><span>${esc(c.email)}</span></span>
+      <button class="del" data-del="${c.id}">Remove</button>
+    </div>`).join('');
+}
+
+$('#contact-list').addEventListener('click', async (e) => {
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    e.stopPropagation(); busy(del, true);
+    try { S.contacts = (await api('POST', '/neerly/contacts/delete', { id: Number(del.dataset.del) })).contacts; if (!S.contacts.length) S.editing = false; renderContacts(); updateShareHint(); }
+    catch (err) { toast(err.message); busy(del, false); }
+    return;
+  }
+  const row = e.target.closest('.contact'); if (!row || S.editing) return;
+  const em = row.dataset.email;
+  S.selected.has(em) ? S.selected.delete(em) : S.selected.add(em);
+  row.classList.toggle('on', S.selected.has(em));
+  updateShareHint();
+});
+$('#contact-list').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('contact')) { e.preventDefault(); e.target.click(); } });
+
+$('#btn-edit-contacts').addEventListener('click', () => { S.editing = !S.editing; renderContacts(); });
+$('#btn-add-toggle').addEventListener('click', () => { $('#f-add').classList.add('on'); $('#btn-add-toggle').classList.add('hidden'); $('#f-add [name=email]').focus(); });
+$('#btn-add-cancel').addEventListener('click', closeAdd);
+function closeAdd() { const f = $('#f-add'); f.reset(); showErr(f, ''); f.classList.remove('on'); $('#btn-add-toggle').classList.remove('hidden'); }
+
+$('#f-add').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const email = f.email.value.trim(), nickname = f.nickname.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  busy(btn, true);
+  try {
+    const d = await api('POST', '/neerly/contacts', { email, nickname });
+    S.contacts = d.contacts; S.selected.add(d.contact.email);
+    closeAdd(); renderContacts(); updateShareHint();
+  } catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+// v0.5 — one-tap share back. S.shareBack = { token, name, avatar, outfit } from the share you were watching.
+function setShareBack(sb) {
+  S.shareBack = sb;
+  try { sb ? sessionStorage.setItem('neerly_shareback', JSON.stringify(sb)) : sessionStorage.removeItem('neerly_shareback'); } catch {}
+}
+function renderShareBack() {
+  const sb = S.shareBack;
+  $('#sb-banner').classList.toggle('hidden', !sb);
+  $('#who-section').classList.toggle('hidden', !!sb);
+  $('#share-lead').textContent = sb
+    ? (S.mode === 'now' ? `Pick how long, and ${sb.name} will see what you’re up to.` : `Pick how long, and ${sb.name} will see you on your way.`)
+    : (S.mode === 'now' ? 'Say what you’re up to, pick who sees it and for how long. It ends on its own.' : 'Pick how long and who can watch. It ends on its own.');
+  if (sb) { $('#sb-name').textContent = sb.name; paintBuddy($('#sb-buddy'), sb.avatar, sb.outfit); }
+  updateShareHint();
+}
+$('#sb-cancel').addEventListener('click', () => { setShareBack(null); renderShareBack(); });
+function startShareBack() {
+  const R = S.recip; if (!R?.share) return;
+  setShareBack({ token: R.token, name: R.share.senderName, avatar: R.share.senderAvatar, outfit: R.share.senderOutfit || {} });
+  if (S.session) { cleanUrl(); openShare(); return; }
+  cleanUrl();
+  $('#signup-tag').textContent = `Create a free account to share yours back with ${R.share.senderName}. Nobody sees it unless you send it.`;
+  show('signup');
+}
+
+function shareButtonLabel() {
+  if (S.mode === 'now') return 'Share what’s up';
+  return 'Share my location';
+}
+function updateShareHint() {
+  const btn = $('#btn-share');
+  if (S.shareBack) {
+    if (!btn.disabled) btn.textContent = `Share back with ${S.shareBack.name}`;
+    $('#share-hint').textContent = `${S.shareBack.name} gets an email with your live link. We'll copy the link too.`;
+    return;
+  }
+  const picked = S.contacts.filter(c => S.selected.has(c.email));
+  if (!btn.disabled) btn.textContent = picked.length ? shareButtonLabel() : `${shareButtonLabel()} · link only`;
+  $('#share-hint').textContent = picked.length
+    ? `${listNames(picked.map(displayName))} will get an email. We'll copy the link too.`
+    : 'No one picked — you’ll get a link to paste into WhatsApp, iMessage, anywhere.';
+}
+
+function getPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error('This browser can’t share location.'));
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: Math.round(p.coords.accuracy), ts: Date.now() }),
+      err => reject(new Error(err.code === 1
+        ? 'Location is blocked for this site. Allow it in your browser settings, then try again.'
+        : 'Couldn’t get a GPS fix. Try again — near a window helps.')),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 15000 });
+  });
+}
+
+$('#btn-share').addEventListener('click', async () => {
+  const btn = $('#btn-share'); const errEl = $('#share-err'); errEl.classList.remove('on');
+  const mode = S.mode, note = $('#note-input').value.trim(), withLoc = mode === 'way' || S.showLoc;
+  if (mode === 'now' && !withLoc && !note) { errEl.textContent = 'Say what you’re up to, or switch on “Show where I am”.'; errEl.classList.add('on'); $('#note-input').focus(); return; }
+  chime.unlock(); // the tap lets the live screen play its soft "someone's watching" chime later
+  busy(btn, true, withLoc ? 'Finding you…' : 'Starting…');
+  try {
+    const pos = withLoc ? await getPosition() : null;
+    S.fix = pos;
+    btn.innerHTML = '<span class="spinner"></span>Starting your share…';
+    const sb = S.shareBack;
+    const recipients = sb ? [] : S.contacts.filter(c => S.selected.has(c.email)).map(c => ({ email: c.email, nickname: c.nickname }));
+    const d = await api('POST', '/neerly/shares', { minutes: S.minutes, recipients, lat: pos?.lat, lng: pos?.lng, accuracy: pos?.accuracy,
+      mode, note, showLocation: withLoc,
+      tzOffset: new Date().getTimezoneOffset(), shareBack: sb ? sb.token : undefined });
+    if (sb) setShareBack(null);
+    if (d.newBadges?.length) setTimeout(() => toast(`🏅 New badge: ${d.newBadges.map(id => BADGE_INFO[id]?.name || id).join(', ')}`, 3500), 2800);
+    S.share = d.share; S.pushedFixTs = pos ? pos.ts : 0;
+    $('#note-input').value = ''; renderChips();
+    const copied = await copyText(S.share.link);
+    toast(d.shareBackTo ? `Shared back with ${d.shareBackTo}` : recipients.length ? (copied ? 'Shared — emails sent and link copied' : 'Shared — emails on their way') : (copied ? 'Link copied — paste it anywhere' : 'You’re live — send the link below'));
+    S.selected.clear();
+    goLive();
+  } catch (err) {
+    errEl.textContent = err.message; errEl.classList.add('on');
+  } finally { busy(btn, false); updateShareHint(); }
+});
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch {}
+  try {
+    const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy'); ta.remove(); return ok;
+  } catch { return false; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Live share (sender)
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.6 — soft chime (and a buzz on Android) when someone starts watching. The sound needs a tap first,
+// so the Share button unlocks it. iPhone browsers can't vibrate; the chime still plays there.
+const chime = {
+  ctx: null,
+  get on() { return store.get('neerly_chime') !== false; },
+  set on(v) { store.set('neerly_chime', !!v); },
+  unlock() { try { this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)(); this.ctx.resume?.(); } catch {} },
+  play() {
+    if (!this.on) return;
+    try { navigator.vibrate?.([40, 60, 40]); } catch {}
+    try {
+      this.unlock(); const c = this.ctx; if (!c) return;
+      const t0 = c.currentTime + .02;
+      [[880, 0], [1318.5, .16]].forEach(([f, dt]) => {
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0, t0 + dt); g.gain.linearRampToValueAtTime(.25, t0 + dt + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + dt + .7);
+        o.connect(g).connect(c.destination); o.start(t0 + dt); o.stop(t0 + dt + .75);
+      });
+    } catch {}
+  },
+};
+function renderChimeSwitch() { const on = chime.on; $('#chime-switch').classList.toggle('on', on); $('#chime-row').setAttribute('aria-checked', on); }
+function toggleChime() { chime.on = !chime.on; if (chime.on) chime.unlock(); renderChimeSwitch(); }
+$('#chime-row').addEventListener('click', toggleChime);
+$('#chime-row').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleChime(); } });
+// Compares who's watching now with the last sync and chimes for anyone new.
+function checkNewWatchers(sh) {
+  const names = (sh.recipients || []).filter(r => r.status === 'watching').map(displayName);
+  const link = sh.linkViewersWatching || 0;
+  const prev = S.prevWatch;
+  // v0.6.1: remember everyone already announced for this share (and the most link viewers seen).
+  // "Watching" flickers when a viewer's tab is in the background, so someone coming back isn't new.
+  if (!prev) { S.prevWatch = { names: new Set(names), link }; return; } // first look: no alert for people already there
+  const fresh = names.filter(n => !prev.names.has(n));
+  const moreLink = link > prev.link;
+  fresh.forEach(n => prev.names.add(n)); prev.link = Math.max(prev.link, link);
+  if (!fresh.length && !moreLink) return;
+  chime.play();
+  toast(fresh.length ? `👀 ${listNames(fresh)} ${fresh.length === 1 ? 'is' : 'are'} watching` : '👀 Someone opened your link', 3000);
+}
+
+const shareHasMap = (sh) => !!sh && (sh.mode !== 'now' || sh.showLocation);
+function renderLiveNote() {
+  const sh = S.share; if (!sh) return;
+  const now = sh.mode === 'now';
+  $('#live-note-label').textContent = now ? 'Your status' : 'Heading to';
+  $('#live-note-text').textContent = sh.note || (now ? 'Just where you are' : 'Add where you’re going');
+  $('#live-note-text').classList.toggle('muted', !sh.note);
+  $('#btn-note-edit').textContent = sh.note ? 'Edit' : 'Add';
+  const hasMap = shareHasMap(sh);
+  $('#live-mapbox').classList.toggle('hidden', !hasMap);
+  $('#live-nomap').classList.toggle('hidden', hasMap);
+  if (!hasMap) {
+    paintBuddy($('#live-nm-buddy'), myBuddy(), myLook().outfit);
+    $('#live-nm-bubble').innerHTML = `${esc(sh.note)}<small>${esc(tillClock(sh.expiresAt))}</small>`;
+  }
+}
+$('#btn-note-edit').addEventListener('click', () => {
+  const f = $('#f-note'); f.note.value = S.share?.note || '';
+  f.note.placeholder = S.share?.mode === 'now' ? 'At the gym' : 'Grandma’s';
+  $('#live-note-view').classList.add('hidden'); $('#btn-note-edit').classList.add('hidden'); f.classList.remove('hidden'); f.note.focus();
+});
+function closeNoteEdit() { $('#f-note').classList.add('hidden'); $('#live-note-view').classList.remove('hidden'); $('#btn-note-edit').classList.remove('hidden'); }
+$('#f-note').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button', f);
+  busy(btn, true);
+  try {
+    const d = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/note`, { note: f.note.value.trim() });
+    S.share = d.share; closeNoteEdit(); renderLiveNote(); if (S.map) S.map.setBubble(statusBubble(S.share)); toast('Updated — they’ll see it on their next refresh');
+  } catch (err) { if (err.status === 410) { S.share = err.body?.share || S.share; endLive(); } else toast(err.message); }
+  finally { busy(btn, false); }
+});
+
+async function goLive() {
+  show('live');
+  $('#live-banner').classList.remove('on');
+  S.prevWatch = null; closeNoteEdit(); renderChimeSwitch();
+  renderLive(); renderLiveNote();
+  if (S.map) { S.map.destroy(); S.map = null; }
+  const hasMap = shareHasMap(S.share);
+  if (hasMap) {
+    S.map = await createMap($('#live-map'), $('#live-recenter'), myBuddy(), { ...myLook(), here: S.share.mode === 'now', weather: S.share.weather, bubble: statusBubble(S.share) });
+    S.trail = mergeTrail([], S.share).trail;
+    S.map.setTrail(S.trail);
+    const loc = S.fix || S.share.location;
+    if (loc) S.map.set(loc.lat, loc.lng, loc.accuracy);
+    startWatch();
+  } else { S.trail = []; stopWatch(); }
+  requestWakeLock();
+  every(500, tickLive);
+  every(UPDATE_MS, syncLive);
+  syncLive();
+}
+
+function startWatch() {
+  stopWatch();
+  if (!navigator.geolocation) return;
+  S.watchId = navigator.geolocation.watchPosition(
+    p => {
+      S.fix = { lat: p.coords.latitude, lng: p.coords.longitude, accuracy: Math.round(p.coords.accuracy), ts: Date.now() };
+      $('#live-banner').classList.remove('on');
+      if (S.map) S.map.set(S.fix.lat, S.fix.lng, S.fix.accuracy);
+    },
+    err => {
+      const b = $('#live-banner');
+      b.textContent = err.code === 1
+        ? 'Location access was turned off. People watching will see your last spot until you allow it again.'
+        : 'Having trouble getting your location. We’ll keep trying.';
+      b.classList.add('on');
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+}
+function stopWatch() { if (S.watchId != null) { navigator.geolocation.clearWatch(S.watchId); S.watchId = null; } }
+
+async function requestWakeLock() {
+  try { if ('wakeLock' in navigator && document.visibilityState === 'visible') S.wakeLock = await navigator.wakeLock.request('screen'); } catch {}
+}
+function releaseWakeLock() { try { S.wakeLock?.release(); } catch {} S.wakeLock = null; }
+
+async function syncLive() {
+  if (!S.share || S.syncing) return;
+  S.syncing = true;
+  try {
+    let d;
+    const tok = encodeURIComponent(S.share.token);
+    if (S.fix && S.fix.ts > S.pushedFixTs && shareHasMap(S.share)) {
+      const fix = S.fix;
+      d = await api('POST', `/neerly/shares/${tok}/location`, { lat: fix.lat, lng: fix.lng, accuracy: fix.accuracy, trailFrom: S.trail.length });
+      S.pushedFixTs = fix.ts;
+    } else {
+      d = await api('GET', `/neerly/shares/${tok}/status?t=${S.trail.length}`);
+    }
+    S.share = d.share;
+    if (!S.share.active) return endLive();
+    applyLiveTrail(S.share);
+    if (S.map) S.map.setWeather(S.share.weather);
+    checkNewWatchers(S.share);
+    renderLive();
+  } catch (err) {
+    if (err.status === 410) { S.share = err.body?.share || S.share; return endLive(); }
+    if (err.status === 401) return;
+    // transient network error: keep going; next tick retries
+  } finally { S.syncing = false; }
+}
+
+function applyLiveTrail(sh) {
+  const m = mergeTrail(S.trail || [], sh);
+  S.trail = m.trail;
+  if (m.changed && S.map) S.map.setTrail(S.trail);
+}
+
+function tickLive() {
+  if (!S.share) return;
+  const left = S.share.expiresAt - serverNow();
+  const total = S.share.expiresAt - S.share.startedAt;
+  $('#live-timer').textContent = fmtClock(left);
+  $('#live-bar').style.width = Math.max(0, Math.min(100, left / total * 100)) + '%';
+  $('#live-clock').classList.toggle('urgent', left < 60000);
+  if (S.share.location?.at) $('#live-updated').textContent = 'Location sent ' + ago(S.share.location.at);
+  if (!shareHasMap(S.share) && S.share.note) $('#live-nm-bubble small').textContent = tillClock(S.share.expiresAt);
+  if (left <= 0 && !S.syncing) syncLive();
+}
+
+function renderLive() {
+  const sh = S.share; if (!sh) return;
+  if (S.map) S.map.setBubble(statusBubble(sh));
+  const rs = sh.recipients || [];
+  const watching = rs.filter(r => r.status === 'watching').map(displayName);
+  const linkW = sh.linkViewersWatching || 0;
+  $('#live-count').textContent = '👥 ' + rs.length + (linkW ? ` +${linkW}` : '');
+  $('#live-count').title = `${rs.length} invited by email` + (linkW ? `, ${linkW} watching via link` : '');
+
+  let cap;
+  const allWatching = watching.length + linkW;
+  if (watching.length && !linkW) cap = `${listNames(watching)} ${watching.length === 1 ? 'is' : 'are'} watching`;
+  else if (watching.length === 1 && linkW) cap = `${watching[0]} and ${linkW} other${linkW > 1 ? 's' : ''} are watching`;
+  else if (allWatching) cap = allWatching === 1 ? 'someone’s watching via your link' : `${allWatching} people are watching`;
+  else if (rs.length) cap = rs.some(r => r.status === 'viewed') ? 'no one’s looking right now' : 'no one’s opened it yet';
+  else cap = 'send the link to someone';
+  $('#live-cap').textContent = 'left — ' + cap;
+
+  const label = { sent: '📬 Sent', watching: '👁 Watching', viewed: '✓ Viewed' };
+  let html = rs.map(r => `
+    <div class="ritem">
+      <span class="avatar">${esc(initials(r))}</span>
+      <span class="who"><b>${esc(displayName(r))}</b><span>${esc(r.email)}</span></span>
+      <span class="status ${r.status}">${label[r.status]}</span>
+    </div>`).join('');
+  if (linkW) html += `<div class="ritem"><span class="avatar">🔗</span><span class="who"><b>Via your link</b><span>Opened from a shared link</span></span><span class="status watching">👁 ${linkW} watching</span></div>`;
+  if (!html) html = '<div class="empty">Just you so far. Copy the link or send it with the buttons above.</div>';
+  $('#live-recipients').innerHTML = html;
+
+  const room = sh.maxExpiresAt - sh.expiresAt;
+  $$('#live-ext button').forEach(b => b.disabled = room <= 0);
+  $('#live-ext-note').textContent = room <= 0 ? 'This share is at the 4-hour max.' : 'A share can run up to 4 hours in total.';
+  $('#live-dist').textContent = sh.mode === 'now' ? (sh.weather ? '' : 'Keep this screen open') : sh.distanceM > 0 ? `${fmtDist(sh.distanceM)} so far` : 'Keep this screen open';
+  if (sh.mode === 'now' && sh.weather) $('#live-dist').innerHTML = wxChip(sh.weather);
+}
+
+$$('#live-ext button').forEach(b => b.addEventListener('click', async () => {
+  const added = b.textContent.replace('+', '');
+  busy(b, true);
+  try {
+    const d = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/extend`, { minutes: Number(b.dataset.min) });
+    S.share = d.share; applyLiveTrail(S.share); renderLive(); renderLiveNote(); tickLive();
+    toast(d.capped ? 'Extended to the 4-hour max' : `Added ${added}`);
+  } catch (err) { if (err.status === 410) { S.share = err.body?.share || S.share; endLive(); } else toast(err.message); }
+  finally { busy(b, false); if (S.share) renderLive(); }
+}));
+
+$('#btn-copy').addEventListener('click', async () => { toast(await copyText(S.share.link) ? 'Link copied' : 'Couldn’t copy — try “Send via…”'); });
+$('#btn-sharesheet').addEventListener('click', async () => {
+  const name = S.session?.user?.name || 'I';
+  const sh = S.share, left = fmtClock(sh.expiresAt - serverNow());
+  const text = sh.mode === 'now'
+    ? (sh.note ? `${name}: ${sh.note} — live for the next ${left}:` : `Here's where ${name === 'I' ? 'I am' : name + ' is'} for the next ${left}:`)
+    : `${name} is on the way${sh.note ? ' to ' + sh.note : ''} — watch live for the next ${left}:`;
+  if (navigator.share) { try { await navigator.share({ title: 'Neerly', text, url: S.share.link }); } catch {} }
+  else toast(await copyText(`${text} ${S.share.link}`) ? 'Message and link copied' : 'Couldn’t copy the link');
+});
+
+$('#btn-stop').addEventListener('click', () => {
+  modal('Stop sharing now?', 'People watching will see that your share has ended. Your location won’t be kept.', [
+    { label: 'Stop sharing', cls: 'btn-danger-solid', fn: async () => {
+      try { const d = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/stop`); S.share = d.share; } catch (err) { if (err.status !== 410) { toast(err.message); return; } }
+      endLive(true);
+    } },
+    { label: 'Keep sharing', cls: 'btn-ghost' },
+  ]);
+});
+
+function endLive(stopped) {
+  clearTimers(); stopWatch(); releaseWakeLock();
+  if (S.map) { S.map.destroy(); S.map = null; }
+  S.fix = null; S.pushedFixTs = 0; S.trail = [];
+  const was = S.share || {};
+  const what = was.mode === 'now' ? (shareHasMap(was) ? 'Your status and spot aren’t being shared anymore, and nothing is kept.' : 'Your status isn’t being shared anymore.')
+    : 'Your location isn’t being shared anymore, and your route isn’t kept.';
+  $('#ended-sub').textContent = (stopped ? 'You stopped sharing. ' : 'Time’s up. ') + what;
+  S.prevWatch = null;
+  renderSummary(S.share?.summary, S.share);
+  S.share = null;
+  show('ended');
+  refreshLifetime();
+}
+
+// End-of-share card: how long, how far, who watched. Then the lifetime line.
+function renderSummary(sum, sh) {
+  paintBuddy($('#sum-buddy'), myBuddy(), myLook().outfit);
+  $('#sum-badges').innerHTML = '';
+  const minutes = sum ? sum.minutes : sh ? Math.round(((sh.endedAt || serverNow()) - sh.startedAt) / 60000) : 0;
+  const dist = sum ? sum.distanceM : sh?.distanceM || 0;
+  const who = sum?.watchedBy || [];
+  const link = sum?.linkViewers || 0;
+  const watchers = who.length + link;
+  $('#sum-time').textContent = fmtMins(Math.max(minutes, 0));
+  const nowMode = sh?.mode === 'now';
+  $('#sum-dist').textContent = nowMode ? (shareHasMap(sh) ? '📍' : '💬') : fmtDist(dist);
+  $('#sum-dist').nextElementSibling.textContent = nowMode ? 'right now' : 'traveled';
+  $('#sum-watch').textContent = watchers;
+  $('#sum-watch-l').textContent = watchers === 1 ? 'viewer' : 'viewers';
+  let line = '';
+  if (who.length) line = 'Watched by ' + (who.length <= 2 ? who.join(' and ') : `${who.slice(0, 2).join(', ')} and ${who.length - 2} more`) + (link ? `, plus ${link} via your link` : '');
+  else if (link) line = `${link} ${link === 1 ? 'person' : 'people'} watched via your link`;
+  else line = 'No one opened it this time.';
+  $('#sum-who').textContent = line;
+  $('#sum-life').textContent = '';
+}
+async function refreshLifetime() {
+  try {
+    setMe(await api('GET', '/neerly/me'));
+    const st = S.stats; if (!st) return;
+    $('#sum-life').textContent = `That’s ${fmtDist(st.distanceM)} and ${st.shares} share${st.shares === 1 ? '' : 's'} with Neerly so far` + (st.streakWeeks > 1 ? ` · 🔥 ${st.streakWeeks}-week streak` : '');
+    // New badges get their moment right here on the card.
+    const fresh = (S.badges?.earned || []).filter(b => !b.seen);
+    $('#sum-badges').innerHTML = fresh.map(b => `<div class="sum-badge">${medalHtml(b.id)}<div><b>New badge: ${esc(BADGE_INFO[b.id]?.name || b.id)}</b><span>${b.reward ? '🎁 Unlocked: ' + esc(rewardName(b.reward)) : esc(BADGE_INFO[b.id]?.how() || '')}</span></div></div>`).join('');
+    if (fresh.length) { const d = await api('POST', '/neerly/me/badges/seen'); S.badges = d.badges; }
+  } catch {}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recipient
+// ─────────────────────────────────────────────────────────────────────────────
+function viewerId() {
+  let v = null;
+  try { v = sessionStorage.getItem('neerly_viewer'); } catch {}
+  if (!v) { v = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); try { sessionStorage.setItem('neerly_viewer', v); } catch {} }
+  return v;
+}
+
+async function openRecipient(token, r) {
+  S.recip = { token, r, viewerId: viewerId(), share: null, recipient: null, map: null, loading: false };
+  try { sessionStorage.setItem('neerly_ref', token); } catch {} // credits the sender if this visit turns into a sign-up
+  try { await pollRecipient(true); }
+  catch (err) {
+    if (err.status === 404) { setSenderName('This share'); $('#rx-title').textContent = 'This link doesn’t match a share'; $('#rx-sub').textContent = 'Double-check the link, or ask the person to send it again.'; $('#rx-actions').classList.add('hidden'); $('#rx-emoji').textContent = '🤔'; show('rexpired'); }
+    else { $('#rx-title').textContent = 'Can’t load this share right now'; $('#rx-sub').textContent = err.message; $('#rx-actions').classList.add('hidden'); show('rexpired'); every(UPDATE_MS, () => location.reload()); }
+  }
+}
+
+function setSenderName(n) { $$('.sender-name').forEach(el => el.textContent = n); }
+
+async function pollRecipient(first) {
+  const R = S.recip; if (!R || R.loading) return;
+  R.loading = true;
+  try {
+    const qs = (R.r ? `r=${encodeURIComponent(R.r)}` : `v=${encodeURIComponent(R.viewerId)}`) + `&t=${(R.trail || []).length}`;
+    const d = await api('GET', `/neerly/shares/${encodeURIComponent(R.token)}?${qs}`);
+    const wasActive = R.share?.active;
+    R.share = d.share; R.recipient = d.recipient;
+    setSenderName(d.share.senderName);
+    document.title = d.share.active ? `${recipTitle(d.share)} · Neerly` : 'Neerly';
+    if (d.share.active) {
+      if (first || !wasActive) await showRecipLive();
+      else { const m = mergeTrail(R.trail || [], d.share); R.trail = m.trail; if (m.changed && R.map) R.map.setTrail(R.trail); if (R.map) R.map.setWeather(d.share.weather); }
+      renderRecipLive();
+    } else if (first || wasActive) {
+      showRecipExpired();
+    }
+  } finally { R.loading = false; }
+}
+
+// v0.6 — what the watcher's headline says, per mode.
+function recipTitle(sh) {
+  if (sh.mode === 'now') return `${sh.senderName}, right now`;
+  return sh.note ? `${sh.senderName} is on the way to ${sh.note}` : `${sh.senderName} is on the way`;
+}
+async function showRecipLive() {
+  show('rlive');
+  const R = S.recip;
+  if (R.map) { R.map.destroy(); R.map = null; }
+  const hasMap = shareHasMap(R.share);
+  $('#r-mapbox').classList.toggle('hidden', !hasMap);
+  $('#r-nomap').classList.toggle('hidden', hasMap);
+  if (hasMap) {
+    R.map = await createMap($('#r-map'), $('#r-recenter'), R.share.senderAvatar, { outfit: R.share.senderOutfit, trail: R.share.senderTrail, here: R.share.mode === 'now', weather: R.share.weather, bubble: statusBubble(R.share) });
+    R.trail = mergeTrail([], R.share).trail; R.map.setTrail(R.trail);
+  } else R.trail = [];
+  every(UPDATE_MS, () => pollRecipient().catch(() => {}));
+  every(500, tickRecip);
+}
+
+function renderRecipLive() {
+  const R = S.recip, sh = R.share;
+  const loc = sh.location;
+  // Headline: "Joy is on the way to Grandma's" / "Joy, right now". The sender's text is escaped.
+  $('#r-title-text').textContent = recipTitle(sh);
+  paintBuddy($('#r-buddy'), sh.senderAvatar, sh.senderOutfit, sh.weather);
+  $('#r-buddy').classList.toggle('hidden', !shareHasMap(sh)); // the big buddy below says it all
+  $('#r-foot').textContent = `Neerly shares are time-limited. When this one ends, ${sh.senderName}’s ${shareHasMap(sh) ? 'location disappears' : 'status disappears'}.`;
+  const till = tillClock(sh.expiresAt);
+  let sub = '';
+  if (R.map) R.map.setBubble(statusBubble(sh)); // v0.6.1: the status is a speech bubble on the map
+  if (sh.weather) sub += ' ' + wxChip(sh.weather);
+  $('#r-sub').innerHTML = sub.trim();
+  if (!shareHasMap(sh)) {
+    paintBuddy($('#r-nm-buddy'), sh.senderAvatar, sh.senderOutfit, sh.weather);
+    $('#r-nm-bubble').innerHTML = `${esc(sh.note)}<small>${esc(till)}</small>`;
+  }
+  if (loc && R.map) R.map.set(loc.lat, loc.lng, loc.accuracy);
+  $('#r-directions').href = loc ? `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}` : '#';
+  $('#r-directions').style.visibility = loc ? 'visible' : 'hidden';
+  tickRecip();
+}
+
+function tickRecip() {
+  const sh = S.recip?.share; if (!sh?.active) return;
+  const left = sh.expiresAt - serverNow();
+  const total = sh.expiresAt - sh.startedAt;
+  $('#r-timer').textContent = fmtClock(left);
+  $('#r-bar').style.width = Math.max(0, Math.min(100, left / total * 100)) + '%';
+  $('#r-clock').classList.toggle('urgent', left < 60000);
+  const at = sh.location?.at;
+  const upd = $('#r-updated');
+  if (!at) upd.textContent = 'Waiting for their first location…';
+  else {
+    const stale = serverNow() - at > 60000;
+    upd.textContent = (stale ? 'Last seen ' : 'Updated ') + ago(at) + (stale ? ' — they may be out of signal' : '');
+  }
+  if (left <= 0 && !S.recip.loading) pollRecipient().catch(() => {});
+}
+
+function showRecipExpired() {
+  const R = S.recip;
+  if (R.map) { R.map.destroy(); R.map = null; }
+  R.trail = [];
+  $('#rx-emoji').innerHTML = R.share?.senderAvatar ? `<span class="buddy" style="width:88px;height:88px;background:var(--accent-softer)">${buddySvg(R.share.senderAvatar, R.share.senderOutfit)}</span>` : '👋';
+  $('#rx-sub').textContent = ''; // just the headline and the buttons
+  $('#rx-title').innerHTML = R.share?.mode === 'now' && !R.share?.showLocation
+    ? `${esc(R.share.senderName)}’s update has ended`
+    : `${esc(R.share?.senderName || '')} is no longer sharing their location`;
+  $('#rx-actions').classList.remove('hidden');
+  $('#btn-request').classList.remove('hidden');
+  $('#f-request').classList.add('hidden');
+  $('#btn-shareback2').classList.toggle('hidden', !R.share?.canShareBack);
+  show('rexpired');
+}
+
+$('#btn-shareback').addEventListener('click', startShareBack);
+$('#btn-shareback2').addEventListener('click', startShareBack);
+
+$('#btn-rsent-share').addEventListener('click', () => { if (S.recip?.share?.canShareBack) startShareBack(); else go('share'); });
+
+$('#btn-request').addEventListener('click', async () => {
+  const btn = $('#btn-request');
+  if (S.session) {
+    busy(btn, true);
+    try { await sendRequest({}); } catch (err) { toast(err.message); } finally { busy(btn, false); }
+    return;
+  }
+  // No account: collect name + email first (prefilled when we know who the link was sent to).
+  const f = $('#f-request');
+  const known = S.recip.recipient;
+  if (known) { f.email.value = known.email; if (known.nickname && !f.name.value) f.name.value = known.nickname; }
+  btn.classList.add('hidden'); f.classList.remove('hidden');
+  (f.name.value ? f.email : f.name).focus();
+});
+
+$('#f-request').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const name = f.name.value.trim(), email = f.email.value.trim();
+  if (!name) return showErr(f, 'Add your name so they know who’s asking');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  busy(btn, true);
+  try { await sendRequest({ name, email, r: S.recip.r || undefined }); }
+  catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+
+async function sendRequest(body) {
+  const d = await api('POST', `/neerly/shares/${encodeURIComponent(S.recip.token)}/request-update`, body);
+  const name = S.recip.share.senderName;
+  $('#rsent-sub').textContent = d.alreadyAsked
+    ? `You already asked ${name} a few minutes ago — we’ll give them a moment.`
+    : `We let ${name} know you asked. If they share again, you’ll get a fresh link.`;
+  const signed = !!S.session;
+  $('#rsent-signup').classList.toggle('hidden', signed);
+  $('#rsent-signedin').classList.toggle('hidden', !signed);
+  if (!signed) {
+    const f = $('#f-rsignup');
+    f.name.value = body.name || ''; f.email.value = body.email || '';
+  }
+  show('rsent');
+}
+
+$('#f-rsignup').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const name = f.name.value.trim(), email = f.email.value.trim(), password = f.password.value;
+  if (!name) return showErr(f, 'Add your name');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  if (password.length < 8) return showErr(f, 'Password needs at least 8 characters');
+  busy(btn, true);
+  try { signIn(await api('POST', '/neerly/auth/signup', { name, email, password, ref: refToken() })); toast('Welcome to Neerly'); await afterSignIn(); }
+  catch (err) {
+    if (err.status === 409) { $('#f-signin [name=email]').value = email; cleanUrl(); show('signin'); toast('You already have an account — sign in'); }
+    else showErr(f, err.message);
+  }
+  finally { busy(btn, false); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modal
+// ─────────────────────────────────────────────────────────────────────────────
+function modal(title, body, actions) {
+  $('#modal-title').textContent = title; $('#modal-body').textContent = body;
+  const box = $('#modal-actions'); box.innerHTML = '';
+  actions.forEach(a => {
+    const b = document.createElement('button'); b.className = 'btn ' + a.cls; b.textContent = a.label;
+    b.onclick = async () => { if (a.fn) { busy(b, true); await a.fn(); } closeModal(); };
+    box.appendChild(b);
+  });
+  $('#modal').classList.add('on');
+}
+function closeModal() { $('#modal').classList.remove('on'); }
+$('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Visibility: refresh right away when people come back to the tab
+// ─────────────────────────────────────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if ($('#s-live').classList.contains('on')) { requestWakeLock(); syncLive(); }
+  if ($('#s-rlive').classList.contains('on')) pollRecipient().catch(() => {});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Boot
+// ─────────────────────────────────────────────────────────────────────────────
+(async function boot() {
+  const p = new URLSearchParams(location.search);
+  S.session = store.get(SESSION_KEY);
+  try { applyAppIcon(localStorage.getItem('neerly_icon')); } catch {}
+  try { const sb = JSON.parse(sessionStorage.getItem('neerly_shareback') || 'null'); if (sb?.token) S.shareBack = sb; } catch {}
+
+  const share = p.get('share');
+  if (share) return openRecipient(share, p.get('r'));
+
+  const reset = p.get('reset');
+  if (reset) { $('#f-reset').dataset.token = reset; return show('reset'); }
+
+  if (!S.session?.token) return show('signin');
+  try {
+    const me = await api('GET', '/neerly/me');
+    setMe(me);
+    if (me.activeShare) { S.share = me.activeShare; return goLive(); }
+    if (!me.user.avatar) return openBuddyPicker();
+    openShare();
+  } catch (err) {
+    if (err.status === 401) return show('signin');
+    // Offline / server asleep: show the share screen from cache and let actions retry.
+    openShare();
+  }
+})();
+</script>
+</body>
+</html>
