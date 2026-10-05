@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#e85d26">
+<!-- Link preview for "Right now" shares (v0.6). WhatsApp, iMessage etc. read these tags without
+     running scripts; people are sent straight on to neerly.html with the same ?share=… link. -->
+<title>Neerly · What I'm up to</title>
+<meta name="description" content="Live, for a little while. Tap to see, no app needed.">
+<meta property="og:title" content="Neerly · What I'm up to">
+<meta property="og:description" content="Live, for a little while. Tap to see, no app needed.">
+<meta property="og:image" content="https://neerly.net/neerly-assets/og-now.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="neerly-assets/mark.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="neerly-assets/favicon-32.png">
+<link rel="apple-touch-icon" href="neerly-assets/apple-touch-icon.png">
+<script>location.replace('/' + location.search + location.hash);</script>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fffaf6;font-family:system-ui,-apple-system,sans-serif;color:#6b5a50}a{color:#c94a18;font-weight:600}</style>
+</head>
+<body>
+<p><a id="go" href="/">Open Neerly</a></p>
+<script>document.getElementById('go').href = '/' + location.search + location.hash;</script>
+</body>
+</html>
