@@ -304,6 +304,56 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
 .map-bubble small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
 .map-bubble::after{content:'';position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1.5px solid var(--accent-soft);border-bottom:1.5px solid var(--accent-soft);transform:translateX(-50%) rotate(45deg)}
 .tmark{pointer-events:none}
+
+/* v0.7a — tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:900;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:6px 0 calc(6px + env(safe-area-inset-bottom));display:none}
+.tabbar.on{display:block}
+.tabbar .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-size:12px;font-weight:700;color:var(--muted);position:relative}
+.tabbar button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button.on{color:var(--accent-dark)}
+.tabbar .tbadge{position:absolute;top:0;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #fff}
+.tabbar .tbadge:empty{display:none}
+.tabbar .live-dot{position:absolute;top:2px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px #fff;display:none}
+.tabbar button.sharing .live-dot{display:block}
+body.has-tabs .app{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+body.has-tabs .sticky-cta{bottom:calc(58px + env(safe-area-inset-bottom))}
+body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+/* v0.7a — Watching */
+.w-map{height:min(50vh,400px)}
+.fpin-wrap{background:none;border:none}
+.fpin{position:relative;width:44px;height:44px}
+.fpin .bpin{width:44px;height:44px;animation:none}
+.fpin .bpin svg{width:34px;height:34px}
+.fpin .bpin.here::before{animation:ring 2s ease-out infinite}
+.fname{position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);white-space:nowrap;background:#fff;border:1px solid var(--border);border-radius:999px;padding:1px 8px;font-size:12px;font-weight:700;color:var(--text);box-shadow:0 1px 4px rgba(80,40,20,.15);pointer-events:none}
+.mepin .bpin{border-color:var(--text)}
+.mepin .fname{background:var(--text);color:#fff;border-color:var(--text)}
+.fpin .map-bubble{bottom:calc(100% + 12px);font-size:13px;max-width:160px}
+.flist{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:14px}
+.frow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-bottom:1px solid var(--border);text-align:left}
+.frow:last-child{border-bottom:none}
+.frow .buddy{width:44px;height:44px;background:var(--accent-softer)}
+.frow .who b{font-weight:700}
+.frow .who .fl2{font-size:13px}
+.frow .who .fl2 span{display:inline}
+.frow .go{flex:none;color:var(--muted);font-size:22px;line-height:1}
+.frow .dist{flex:none;font-size:13px;font-weight:700;color:var(--sub);background:#f4ebe4;border-radius:999px;padding:4px 9px}
+.w-empty{text-align:center;padding:26px 18px;color:var(--sub)}
+.w-empty .buddy{width:72px;height:72px;margin-bottom:10px;background:var(--accent-softer)}
+.tip{display:flex;gap:12px;align-items:flex-start;background:var(--accent-softer);border:1.5px solid var(--accent-soft);border-radius:16px;padding:12px 14px;margin-top:16px;font-size:14px;color:var(--sub)}
+.tip b{color:var(--text)}
+.tip .x{flex:none;color:var(--muted);font-size:20px;line-height:1;padding:0 2px}
+/* v0.7a — iPhone home-screen steps */
+.ios-steps{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.ios-steps li{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--sub)}
+.ios-steps .ic{flex:none;width:30px;height:30px;border-radius:8px;background:#fff;border:1px solid var(--border);display:grid;place-items:center;color:#2f7cf6}
+.ios-steps .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ios-steps .n{font-weight:800;color:var(--accent-dark);width:14px;flex:none}
+/* v0.7a — "link only" made obvious, and last time's people one tap away */
+.linkonly{display:flex;gap:10px;align-items:flex-start;background:#fff4e0;color:#7a4f00;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:500;margin-top:12px}
+.linkonly b{font-weight:700}
+.lastpicks{margin-top:10px}
 </style>
 </head>
 <body>
@@ -409,6 +459,8 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
       <div class="row"><button type="button" class="btn btn-outline" id="btn-add-cancel">Cancel</button><button type="submit" class="btn btn-primary">Add</button></div>
     </form>
   </div>
+  <div class="chips lastpicks hidden" id="lastpicks"></div>
+  <div class="linkonly hidden" id="linkonly"><span>🔗</span><span><b>Nobody picked, so no email goes out.</b> You’ll get a link to send yourself in WhatsApp, iMessage, anywhere. Tap a name above to email them.</span></div>
   <p class="muted small" style="margin-top:10px">They'll get an email with a link. No app or account needed to watch.</p>
   </div>
 
@@ -497,7 +549,7 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
 
 <!-- ═════════════ PROFILE ═════════════ -->
 <section class="screen" id="s-profile">
-  <div class="topbar"><a href="#" class="link" id="profile-back">← Back</a><button class="link" id="btn-edit-profile">Edit</button></div>
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div><button class="link" id="btn-edit-profile">Edit</button><a href="#" class="link hidden" id="profile-back">← Back</a></div>
   <div class="phead">
     <span class="buddy ring" id="p-buddy"></span>
     <h1 id="p-name"></h1>
@@ -510,7 +562,7 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
   <div class="bshelf" id="p-badges"></div>
   <div class="card install hidden" id="p-install">
     <img src="neerly-assets/apple-touch-icon.png" alt="" id="p-install-icon">
-    <div style="flex:1"><b>Put Neerly on your home screen</b><p class="muted small" id="p-install-how" style="margin-top:4px"></p>
+    <div style="flex:1"><b>Put Neerly on your home screen</b><p class="muted small" id="p-install-how" style="margin-top:4px"></p><ol class="ios-steps hidden" id="p-install-steps"></ol>
       <button class="btn btn-primary hidden" id="btn-install" style="margin-top:10px;min-height:44px;padding:10px 16px;font-size:15px">Add to Home Screen</button></div>
   </div>
   <h2>Account</h2>
@@ -572,6 +624,7 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
 <section class="screen" id="s-rlive">
   <div class="topbar">
     <div class="brand"><span class="dot"></span>Neerly</div>
+    <a href="#" class="link hidden" id="r-back">← Watching</a>
     <span class="pill"><span class="pulse"></span>Live</span>
   </div>
   <div class="r-head">
@@ -591,9 +644,33 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
   <p class="muted small center" style="margin-top:14px" id="r-foot">Neerly shares are time-limited. When this one ends, <span class="sender-name"></span>'s location disappears.</p>
 </section>
 
+<!-- ═════════════ WATCHING (v0.7a) ═════════════ -->
+<section class="screen" id="s-watching">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Neerly</div>
+    <span class="count hidden" id="w-count"></span>
+  </div>
+  <h1>Watching</h1>
+  <p class="lead" id="w-lead">Everyone sharing with you, on one map.</p>
+  <div id="w-verify" class="card hidden" style="margin-top:18px">
+    <b style="display:block;font-size:17px">Confirm your email first</b>
+    <p class="muted small" style="margin-top:6px" id="w-verify-text">Friends share with your email address. Confirm it's yours, and everyone sharing with it shows up here.</p>
+    <button class="btn btn-primary" id="btn-verify" style="margin-top:14px">Email me a link</button>
+  </div>
+  <div id="w-main">
+    <div class="map-wrap" style="margin-top:16px"><div class="map w-map" id="w-map"></div><button class="recenter" id="w-recenter">Show everyone</button></div>
+    <div class="switch-row compact" id="w-me-row" role="switch" aria-checked="false" tabindex="0">
+      <div class="txt"><b>Show me on this map</b><span class="sub">Only you see this. It doesn’t share your location.</span></div>
+      <span class="switch" id="w-me-switch"></span>
+    </div>
+    <div class="flist" id="w-list"></div>
+  </div>
+  <div class="tip hidden" id="w-tip"><div style="flex:1"><b>Tip: put Neerly on your Home Screen</b> so checking on friends is one tap.<ol class="ios-steps" id="w-tip-steps"></ol></div><button class="x" id="w-tip-x" aria-label="Dismiss">×</button></div>
+</section>
+
 <!-- ═════════════ RECIPIENT EXPIRED ═════════════ -->
 <section class="screen" id="s-rexpired">
-  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div><span class="pill grey">Ended</span></div>
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div><a href="#" class="link hidden" id="rx-back">← Watching</a><span class="pill grey">Ended</span></div>
   <div class="big-emoji" id="rx-emoji">👋</div>
   <h1 class="center" id="rx-title"><span class="sender-name"></span> is no longer sharing their location</h1>
   <p class="lead center" id="rx-sub"></p>
@@ -654,6 +731,13 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
     <div class="stack" style="margin-top:18px"><button class="btn btn-primary" id="cel-next">Nice!</button></div>
   </div>
 </div>
+<nav class="tabbar" id="tabbar" aria-label="Neerly">
+  <div class="in">
+    <button type="button" data-tab="share"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span class="live-dot"></span>Share</button>
+    <button type="button" data-tab="watching"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4.2 1.6 4.7 4.5"/></svg><span class="tbadge" id="tab-badge"></span>Watching</button>
+    <button type="button" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.9-3.8 3.9-6 7.5-6s6.6 2.2 7.5 6"/></svg>Profile</button>
+  </div>
+</nav>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -706,6 +790,12 @@ const S = {
   stats: null,            // v0.4: lifetime totals from /me
   pickBuddy: null, editBuddy: null,
   badges: null, unlocked: null, editLook: null, shareBack: null, celebrating: false,
+  // v0.7a
+  liveSync: null,         // the sender's sync timer: keeps running on every tab while a share is live
+  endedPending: false,    // the share ended while another tab was open; the Share tab shows the summary
+  watch: null,            // Watching tab: { friends, map, meWatchId, meFix, verifySent }
+  watchCount: 0,          // live shares sent to me (tab badge)
+  badgeTimer: null,
 };
 const serverNow = () => Date.now() + S.offset;
 
@@ -724,10 +814,28 @@ function busy(btn, on, label) {
 function clearTimers() { S.timers.forEach(clearInterval); S.timers = []; }
 function every(ms, fn) { S.timers.push(setInterval(fn, ms)); }
 
+// v0.7a — the tab bar shows on the main signed-in screens (and on a share opened from Watching).
+var TAB_OF = { share: 'share', live: 'share', ended: 'share', watching: 'watching', profile: 'profile', rlive: 'watching', rexpired: 'watching' };
+var currentScreen = null;
 function show(id) {
   clearTimers();
+  if (currentScreen === 'watching' && id !== 'watching') leaveWatching();
+  currentScreen = id;
   $$('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
   window.scrollTo(0, 0);
+  updateTabs();
+}
+function updateTabs() {
+  const id = currentScreen;
+  const fromWatch = (id === 'rlive' || id === 'rexpired') && !!S.recip?.fromWatching;
+  const on = !!S.session?.token && (fromWatch || (TAB_OF[id] && id !== 'rlive' && id !== 'rexpired'));
+  $('#tabbar').classList.toggle('on', on);
+  document.body.classList.toggle('has-tabs', on);
+  $$('#tabbar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === TAB_OF[id]));
+  $('#tabbar [data-tab=share]').classList.toggle('sharing', !!S.share?.active);
+  $('#tab-badge').textContent = S.watchCount ? String(S.watchCount) : '';
+  $('#r-back').classList.toggle('hidden', !fromWatch);
+  $('#rx-back').classList.toggle('hidden', !fromWatch);
 }
 
 function fmtClock(ms) {
@@ -1137,7 +1245,12 @@ function signIn(data) {
   S.session = { token: data.token, user: data.user };
   store.set(SESSION_KEY, S.session);
 }
-function signOutLocal() { S.session = null; store.del(SESSION_KEY); }
+function signOutLocal() {
+  S.session = null; store.del(SESSION_KEY);
+  clearInterval(S.badgeTimer); S.badgeTimer = null; S.watchCount = 0;
+  stopLiveSync(); S.endedPending = false;
+  if (S.watch?.map) { S.watch.map.destroy(); } S.watch = null;
+}
 
 $$('[data-toggle-pw]').forEach(b => b.addEventListener('click', () => {
   const i = b.previousElementSibling; const on = i.type === 'password';
@@ -1264,6 +1377,7 @@ async function afterSignIn() {
   cleanUrl();
   const me = await api('GET', '/neerly/me');
   setMe(me);
+  startBadgeTimer();
   if (me.activeShare) { S.share = me.activeShare; return goLive(); }
   if (!me.user.avatar) return openBuddyPicker();   // new accounts (and pre-v0.4 ones) pick a buddy once
   return openShare();
@@ -1322,8 +1436,11 @@ function renderInstall() {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   $('#btn-install').classList.toggle('hidden', !installPrompt);
   $('#p-install-how').textContent = installPrompt ? 'One tap, and it opens like an app.'
-    : ios ? 'In Safari, tap the Share button, then “Add to Home Screen”.'
+    : ios ? 'Three taps in Safari:'
     : 'Open your browser menu and choose “Add to Home screen” or “Install app”.';
+  const steps = $('#p-install-steps');
+  steps.classList.toggle('hidden', !(ios && !installPrompt));
+  if (ios && !installPrompt) steps.innerHTML = iosStepsHtml();
   card.classList.remove('hidden');
 }
 $('#btn-install').addEventListener('click', async () => {
@@ -1487,7 +1604,7 @@ async function openShare() {
   renderShareBack();
   show('share');
   S.editing = false; renderContacts(); updateShareHint();
-  try { const d = await api('GET', '/neerly/contacts'); S.contacts = d.contacts; renderContacts(); }
+  try { const d = await api('GET', '/neerly/contacts'); S.contacts = d.contacts; renderContacts(); updateShareHint(); }
   catch (err) { if (err.status !== 401) toast(err.message); else show('signin'); }
 }
 
@@ -1629,8 +1746,25 @@ function updateShareHint() {
   if (!btn.disabled) btn.textContent = picked.length ? shareButtonLabel() : `${shareButtonLabel()} · link only`;
   $('#share-hint').textContent = picked.length
     ? `${listNames(picked.map(displayName))} will get an email. We'll copy the link too.`
-    : 'No one picked — you’ll get a link to paste into WhatsApp, iMessage, anywhere.';
+    : 'No email goes out. We’ll copy the link for you to send.';
+  // v0.7a: make "nobody picked" impossible to miss, and offer last time's people in one tap.
+  $('#linkonly').classList.toggle('hidden', !!picked.length);
+  renderLastPicks(picked.length);
 }
+function lastPicksKey() { return 'neerly_lastpicks_' + (S.session?.user?.email || ''); }
+function renderLastPicks(nPicked) {
+  const box = $('#lastpicks');
+  const last = (store.get(lastPicksKey()) || []).filter(e => S.contacts.some(c => c.email === e));
+  if (nPicked || !last.length || S.shareBack) { box.classList.add('hidden'); return; }
+  const names = last.map(e => displayName(S.contacts.find(c => c.email === e)));
+  box.innerHTML = `<button type="button" class="chip" id="btn-lastpicks">↺ Same as last time: ${esc(listNames(names))}</button>`;
+  box.classList.remove('hidden');
+}
+$('#lastpicks').addEventListener('click', (e) => {
+  if (!e.target.closest('#btn-lastpicks')) return;
+  for (const em of store.get(lastPicksKey()) || []) if (S.contacts.some(c => c.email === em)) S.selected.add(em);
+  renderContacts(); updateShareHint();
+});
 
 function getPosition() {
   return new Promise((resolve, reject) => {
@@ -1665,6 +1799,7 @@ $('#btn-share').addEventListener('click', async () => {
     $('#note-input').value = ''; renderChips();
     const copied = await copyText(S.share.link);
     toast(d.shareBackTo ? `Shared back with ${d.shareBackTo}` : recipients.length ? (copied ? 'Shared — emails sent and link copied' : 'Shared — emails on their way') : (copied ? 'Link copied — paste it anywhere' : 'You’re live — send the link below'));
+    if (recipients.length) store.set(lastPicksKey(), recipients.map(r => r.email));
     S.selected.clear();
     goLive();
   } catch (err) {
@@ -1775,9 +1910,12 @@ async function goLive() {
   } else { S.trail = []; stopWatch(); }
   requestWakeLock();
   every(500, tickLive);
-  every(UPDATE_MS, syncLive);
+  startLiveSync();
   syncLive();
 }
+// v0.7a: the sender's location keeps going out while they look at another tab.
+function startLiveSync() { if (!S.liveSync) S.liveSync = setInterval(syncLive, UPDATE_MS); }
+function stopLiveSync() { clearInterval(S.liveSync); S.liveSync = null; }
 
 function startWatch() {
   stopWatch();
@@ -1917,7 +2055,9 @@ $('#btn-stop').addEventListener('click', () => {
 });
 
 function endLive(stopped) {
-  clearTimers(); stopWatch(); releaseWakeLock();
+  const onLive = currentScreen === 'live';
+  if (onLive) clearTimers();
+  stopLiveSync(); stopWatch(); releaseWakeLock();
   if (S.map) { S.map.destroy(); S.map = null; }
   S.fix = null; S.pushedFixTs = 0; S.trail = [];
   const was = S.share || {};
@@ -1927,7 +2067,8 @@ function endLive(stopped) {
   S.prevWatch = null;
   renderSummary(S.share?.summary, S.share);
   S.share = null;
-  show('ended');
+  if (onLive || !S.session) show('ended');
+  else { S.endedPending = true; updateTabs(); toast('Your share has ended'); } // don't pull them off Watching or Profile
   refreshLifetime();
 }
 
@@ -1975,8 +2116,8 @@ function viewerId() {
   return v;
 }
 
-async function openRecipient(token, r) {
-  S.recip = { token, r, viewerId: viewerId(), share: null, recipient: null, map: null, loading: false };
+async function openRecipient(token, r, fromWatching) {
+  S.recip = { token, r, viewerId: viewerId(), share: null, recipient: null, map: null, loading: false, fromWatching: !!fromWatching };
   try { sessionStorage.setItem('neerly_ref', token); } catch {} // credits the sender if this visit turns into a sign-up
   try { await pollRecipient(true); }
   catch (err) {
@@ -1986,6 +2127,234 @@ async function openRecipient(token, r) {
 }
 
 function setSenderName(n) { $$('.sender-name').forEach(el => el.textContent = n); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.7a — Tab bar and the Watching map
+// ─────────────────────────────────────────────────────────────────────────────
+function openShareTab() {
+  if (S.share?.active) return goLive();
+  if (S.endedPending) { S.endedPending = false; return show('ended'); }
+  openShare();
+}
+$('#tabbar').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  const tab = b.dataset.tab;
+  if (tab === 'share') openShareTab();
+  else if (tab === 'watching') openWatching();
+  else openProfile();
+});
+$('#r-back').addEventListener('click', (e) => { e.preventDefault(); openWatching(); });
+$('#rx-back').addEventListener('click', (e) => { e.preventDefault(); openWatching(); });
+
+// The tab badge: how many live shares are waiting for me. Checked quietly every minute.
+function startBadgeTimer() {
+  if (S.badgeTimer || !S.session?.token) return;
+  checkWatchCount();
+  S.badgeTimer = setInterval(checkWatchCount, 60000);
+}
+async function checkWatchCount() {
+  if (!S.session?.user?.emailVerified || currentScreen === 'watching') return;
+  try { const d = await api('GET', '/neerly/watching'); S.watchCount = d.friends.length; updateTabs(); } catch {}
+}
+
+var showMePref = { get: () => store.get('neerly_showme') === true, set: (v) => store.set('neerly_showme', !!v) };
+
+async function openWatching() {
+  S.recip = null;
+  if (!S.watch) S.watch = { friends: [], map: null, meWatchId: null, meFix: null, verifySent: false };
+  show('watching');
+  renderWatchTip();
+  const verified = !!S.session?.user?.emailVerified;
+  $('#w-verify').classList.toggle('hidden', verified);
+  $('#w-main').classList.toggle('hidden', !verified);
+  if (!verified) {
+    $('#w-lead').textContent = 'Everyone sharing with you, on one map.';
+    $('#w-verify-text').textContent = S.watch.verifySent
+      ? `We sent a link to ${S.session.user.email}. Tap it, then come back here.`
+      : `Friends share with your email address. Confirm ${S.session.user.email} is yours, and everyone sharing with it shows up here.`;
+    // They may have confirmed on another device: check again.
+    try { setMe(await api('GET', '/neerly/me')); if (S.session.user.emailVerified && currentScreen === 'watching') return openWatching(); } catch {}
+    return;
+  }
+  if (S.watch.map) { S.watch.map.destroy(); S.watch.map = null; }
+  S.watch.map = createWatchMap($('#w-map'), $('#w-recenter'));
+  renderMeSwitch();
+  if (showMePref.get()) startMe();
+  renderWatching();
+  await pollWatching(true);
+  every(UPDATE_MS, () => pollWatching());
+  every(1000, tickWatching);
+}
+function leaveWatching() { stopMe(); }
+
+async function pollWatching(first) {
+  try {
+    const d = await api('GET', '/neerly/watching?look=1');
+    if (currentScreen !== 'watching') return;
+    S.watch.friends = d.friends; S.watchCount = d.friends.length; updateTabs();
+    renderWatching(first);
+  } catch (err) {
+    if (err.body?.needsVerify) { S.session.user.emailVerified = false; openWatching(); }
+  }
+}
+
+function friendLine(f) {
+  if (f.mode === 'now') return f.note || (f.showLocation ? 'Here right now' : 'Right now');
+  return f.note ? `On the way to ${f.note}` : 'On the way';
+}
+function friendTime(f) {
+  const left = f.expiresAt - serverNow();
+  if (left <= 0) return 'ending';
+  if (f.mode === 'now') return tillClock(f.expiresAt);
+  const m = Math.ceil(left / 60000);
+  return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min left` : `${m} min left`;
+}
+function distM(a, b) {
+  const R = 6371000, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function meNow() { if (!showMePref.get()) return null; return S.share?.active && S.fix ? S.fix : S.watch?.meFix || null; }
+
+function renderWatching(fit) {
+  const W = S.watch, fr = W.friends;
+  const n = fr.length;
+  $('#w-lead').textContent = n ? `${n === 1 ? '1 friend is' : n + ' friends are'} sharing with you right now.` : 'Everyone sharing with you, on one map.';
+  $('#w-count').textContent = n ? `👀 ${n}` : '';
+  $('#w-count').classList.toggle('hidden', !n);
+  const me = meNow();
+  $('#w-list').innerHTML = n ? fr.map(f => {
+    const d = me && f.location ? fmtDist(distM(me, f.location)) : '';
+    return `<button type="button" class="frow" data-token="${esc(f.token)}">
+      <span class="buddy">${buddySvg(f.avatar || DEFAULT_BUDDY, f.outfit, f.weather)}</span>
+      <span class="who"><b>${esc(f.name)}</b><span>${esc(friendLine(f))}</span><span class="fl2"><span class="ftime" data-exp="${f.expiresAt}" data-mode="${f.mode}">${esc(friendTime(f))}</span>${f.location ? '' : ' · location not shared'}</span></span>
+      ${d ? `<span class="dist">${esc(d)}</span>` : ''}<span class="go">›</span></button>`;
+  }).join('') : `<div class="w-empty"><span class="buddy">${buddySvg(myBuddy(), myLook().outfit)}</span><p><b>Nobody’s sharing with you right now.</b></p><p class="small" style="margin-top:6px">When a friend shares with ${esc(S.session.user.email)}, their buddy shows up here.</p></div>`;
+  if (W.map) { W.map.setFriends(fr); W.map.setMe(me); if (fit) W.map.fitAll(); }
+}
+function tickWatching() {
+  $$('#w-list .ftime').forEach(el => { const f = { expiresAt: Number(el.dataset.exp), mode: el.dataset.mode }; el.textContent = friendTime(f); });
+  if (S.watch?.map) S.watch.map.setMe(meNow());
+}
+$('#w-list').addEventListener('click', (e) => {
+  const row = e.target.closest('.frow'); if (!row) return;
+  followFriend(row.dataset.token);
+});
+function followFriend(token) {
+  const f = S.watch?.friends.find(x => x.token === token); if (!f) return;
+  openRecipient(f.token, f.r, true);
+}
+$('#w-recenter').addEventListener('click', () => S.watch?.map?.fitAll());
+
+// "Show me on this map": only on this phone, never sent anywhere.
+function renderMeSwitch() {
+  const on = showMePref.get();
+  $('#w-me-switch').classList.toggle('on', on);
+  $('#w-me-row').setAttribute('aria-checked', on);
+}
+function toggleMe() {
+  const on = !showMePref.get(); showMePref.set(on); renderMeSwitch();
+  if (on) startMe(); else { stopMe(); if (S.watch) S.watch.meFix = null; renderWatching(); }
+}
+$('#w-me-row').addEventListener('click', toggleMe);
+$('#w-me-row').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMe(); } });
+function startMe() {
+  if (!S.watch || S.watch.meWatchId != null || !navigator.geolocation) return;
+  if (S.share?.active && S.watchId != null) return renderWatching(); // already following you for your own share
+  S.watch.meWatchId = navigator.geolocation.watchPosition(
+    p => { if (!S.watch) return; const first = !S.watch.meFix; S.watch.meFix = { lat: p.coords.latitude, lng: p.coords.longitude, accuracy: Math.round(p.coords.accuracy) }; renderWatching(first); },
+    err => { if (err.code === 1) { showMePref.set(false); renderMeSwitch(); stopMe(); toast('Location is blocked for this site, so you can’t be shown on the map.'); } },
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 });
+}
+function stopMe() { if (S.watch?.meWatchId != null) { navigator.geolocation.clearWatch(S.watch.meWatchId); S.watch.meWatchId = null; } }
+
+// Confirm-your-email card
+$('#btn-verify').addEventListener('click', async () => {
+  const btn = $('#btn-verify'); busy(btn, true);
+  try {
+    const d = await api('POST', '/neerly/me/verify-email');
+    if (d.alreadyVerified) { S.session.user.emailVerified = true; return openWatching(); }
+    S.watch.verifySent = true;
+    $('#w-verify-text').textContent = `We sent a link to ${S.session.user.email}. Tap it, then come back here.`;
+    toast(d.recentlySent ? 'We just sent one, check your inbox' : 'Check your inbox');
+  } catch (err) { toast(err.message); }
+  finally { busy(btn, false); }
+});
+
+// iPhone: a short picture guide to "Add to Home Screen" (Safari can't offer a button for it).
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IC_SHARE = '<svg viewBox="0 0 24 24"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5"/><path d="M6 11H5v10h14V11h-1"/></svg>';
+const IC_ADD = '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>';
+function iosStepsHtml() {
+  return `<li><span class="n">1</span><span class="ic">${IC_SHARE}</span><span>In Safari, tap <b>Share</b> (on newer iPhones it's under <b>•••</b>)</span></li>
+    <li><span class="n">2</span><span class="ic">${IC_ADD}</span><span>Scroll down and tap <b>Add to Home Screen</b></span></li>
+    <li><span class="n">3</span><span class="ic" style="color:var(--accent)">✓</span><span>Tap <b>Add</b>. Neerly opens like an app from then on</span></li>`;
+}
+function renderWatchTip() {
+  const show_ = isIOS() && !isStandalone() && !store.get('neerly_tip_home');
+  $('#w-tip').classList.toggle('hidden', !show_);
+  if (show_) $('#w-tip-steps').innerHTML = iosStepsHtml();
+}
+$('#w-tip-x').addEventListener('click', () => { store.set('neerly_tip_home', true); $('#w-tip').classList.add('hidden'); });
+
+// Several buddies on one map (OpenStreetMap / Leaflet; fine with or without a Google Maps key).
+function createWatchMap(el, recenterBtn) {
+  if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. The list below still works.</div>'; return { setFriends() {}, setMe() {}, fitAll() {}, destroy() {} }; }
+  const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
+  map.attributionControl.setPrefix(false);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  const markers = new Map(); // token -> { marker, key }
+  let meMarker = null, meKey = '', fitted = false;
+  const icon = (f) => L.divIcon({ className: 'fpin-wrap', iconSize: [44, 44], iconAnchor: [22, 22],
+    html: `<div class="fpin">${f.mode === 'now' && f.note ? `<div class="map-bubble">${esc(f.note)}</div>` : ''}<div class="bpin${f.mode === 'now' ? ' here' : ''}">${buddySvg(f.avatar || DEFAULT_BUDDY, f.outfit, f.weather)}</div><span class="fname">${esc(f.name)}</span></div>` });
+  const meIcon = () => L.divIcon({ className: 'fpin-wrap', iconSize: [44, 44], iconAnchor: [22, 22],
+    html: `<div class="fpin mepin"><div class="bpin">${buddySvg(myBuddy(), myLook().outfit)}</div><span class="fname">You</span></div>` });
+  if (recenterBtn) recenterBtn.style.display = 'block';
+  function points() {
+    const pts = [...markers.values()].map(m => m.marker.getLatLng());
+    if (meMarker) pts.push(meMarker.getLatLng());
+    return pts;
+  }
+  const api_ = {
+    setFriends(list) {
+      const seen = new Set();
+      for (const f of list) {
+        if (!f.location) continue;
+        seen.add(f.token);
+        const key = JSON.stringify([f.name, f.avatar, f.outfit, f.weather, f.mode, f.note]);
+        const ll = [f.location.lat, f.location.lng];
+        let m = markers.get(f.token);
+        if (!m) {
+          const marker = L.marker(ll, { icon: icon(f), keyboard: true, title: f.name, zIndexOffset: 500 }).addTo(map);
+          marker.on('click', () => followFriend(f.token));
+          markers.set(f.token, { marker, key });
+        } else {
+          m.marker.setLatLng(ll);
+          if (m.key !== key) { m.marker.setIcon(icon(f)); m.key = key; }
+        }
+      }
+      for (const [tok, m] of markers) if (!seen.has(tok)) { m.marker.remove(); markers.delete(tok); }
+      if (!fitted && points().length) { this.fitAll(); }
+    },
+    setMe(fix) {
+      if (!fix) { if (meMarker) { meMarker.remove(); meMarker = null; } return; }
+      const k = myBuddy() + JSON.stringify(myLook().outfit);
+      if (!meMarker) { meMarker = L.marker([fix.lat, fix.lng], { icon: meIcon(), keyboard: false, zIndexOffset: 1000, interactive: false }).addTo(map); meKey = k; if (!fitted || markers.size) this.fitAll(); }
+      else { meMarker.setLatLng([fix.lat, fix.lng]); if (k !== meKey) { meMarker.setIcon(meIcon()); meKey = k; } }
+    },
+    fitAll() {
+      const pts = points();
+      if (!pts.length) return;
+      fitted = true;
+      if (pts.length === 1) map.setView(pts[0], 15);
+      else map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [90, 70], paddingBottomRight: [90, 50], maxZoom: 16 }); // room for names and bubbles
+    },
+    destroy() { map.remove(); },
+  };
+  setTimeout(() => map.invalidateSize(), 50);
+  return api_;
+}
 
 async function pollRecipient(first) {
   const R = S.recip; if (!R || R.loading) return;
@@ -2185,12 +2554,27 @@ document.addEventListener('visibilitychange', () => {
   const reset = p.get('reset');
   if (reset) { $('#f-reset').dataset.token = reset; return show('reset'); }
 
+  // v0.7a: "Confirm your email" link
+  const verify = p.get('verify');
+  let thenWatching = false;
+  if (verify) {
+    cleanUrl();
+    try {
+      const d = await api('POST', '/neerly/auth/verify', { token: verify });
+      toast('Email confirmed ✓');
+      thenWatching = !!(S.session?.token && d.user);
+    } catch (err) { toast(err.message, 4500); }
+    if (!S.session?.token) return show('signin');
+  }
+
   if (!S.session?.token) return show('signin');
   try {
     const me = await api('GET', '/neerly/me');
     setMe(me);
-    if (me.activeShare) { S.share = me.activeShare; return goLive(); }
+    startBadgeTimer();
+    if (me.activeShare) { S.share = me.activeShare; await goLive(); return thenWatching ? openWatching() : undefined; } // a live share keeps going on every tab
     if (!me.user.avatar) return openBuddyPicker();
+    if (thenWatching) return openWatching();
     openShare();
   } catch (err) {
     if (err.status === 401) return show('signin');
