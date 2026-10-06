@@ -1150,6 +1150,7 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
   }
 
   if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. Location updates still work.</div>'; return { set() {}, setTrail() {}, setWeather() {}, setBubble() {}, destroy() {} }; }
+  if (el._leaflet_id) { el._leaflet_id = null; el.innerHTML = ''; } // v0.7a fix: never "Map container is already initialized"
   const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
   map.attributionControl.setPrefix(false); // drop Leaflet's own link + flag; the OpenStreetMap credit (required by its licence) stays
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
@@ -2117,6 +2118,7 @@ function viewerId() {
 }
 
 async function openRecipient(token, r, fromWatching) {
+  dropRecipMap(); // v0.7a fix: close the last friend's map before opening another (Leaflet can't draw twice in one box)
   S.recip = { token, r, viewerId: viewerId(), share: null, recipient: null, map: null, loading: false, fromWatching: !!fromWatching };
   try { sessionStorage.setItem('neerly_ref', token); } catch {} // credits the sender if this visit turns into a sign-up
   try { await pollRecipient(true); }
@@ -2125,6 +2127,8 @@ async function openRecipient(token, r, fromWatching) {
     else { $('#rx-title').textContent = 'Can’t load this share right now'; $('#rx-sub').textContent = err.message; $('#rx-actions').classList.add('hidden'); show('rexpired'); every(UPDATE_MS, () => location.reload()); }
   }
 }
+
+function dropRecipMap() { if (S.recip?.map) { try { S.recip.map.destroy(); } catch {} S.recip.map = null; } }
 
 function setSenderName(n) { $$('.sender-name').forEach(el => el.textContent = n); }
 
@@ -2160,6 +2164,7 @@ async function checkWatchCount() {
 var showMePref = { get: () => store.get('neerly_showme') === true, set: (v) => store.set('neerly_showme', !!v) };
 
 async function openWatching() {
+  dropRecipMap();
   S.recip = null;
   if (!S.watch) S.watch = { friends: [], map: null, meWatchId: null, meFix: null, verifySent: false };
   show('watching');
@@ -2241,9 +2246,11 @@ $('#w-list').addEventListener('click', (e) => {
   const row = e.target.closest('.frow'); if (!row) return;
   followFriend(row.dataset.token);
 });
-function followFriend(token) {
-  const f = S.watch?.friends.find(x => x.token === token); if (!f) return;
-  openRecipient(f.token, f.r, true);
+let following = false;
+async function followFriend(token) {
+  const f = S.watch?.friends.find(x => x.token === token); if (!f || following) return;
+  following = true;
+  try { await openRecipient(f.token, f.r, true); } finally { following = false; }
 }
 $('#w-recenter').addEventListener('click', () => S.watch?.map?.fitAll());
 
@@ -2301,6 +2308,7 @@ $('#w-tip-x').addEventListener('click', () => { store.set('neerly_tip_home', tru
 // Several buddies on one map (OpenStreetMap / Leaflet; fine with or without a Google Maps key).
 function createWatchMap(el, recenterBtn) {
   if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. The list below still works.</div>'; return { setFriends() {}, setMe() {}, fitAll() {}, destroy() {} }; }
+  if (el._leaflet_id) { el._leaflet_id = null; el.innerHTML = ''; } // v0.7a fix: never "Map container is already initialized"
   const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
   map.attributionControl.setPrefix(false);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
