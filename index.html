@@ -605,6 +605,8 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <label class="field"><span>Current password</span><div class="pw"><input class="input" type="password" name="current" autocomplete="current-password" required><button type="button" data-toggle-pw>Show</button></div></label>
     <label class="field"><span>New password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required><button type="button" data-toggle-pw>Show</button></div></label>
     <button class="btn btn-primary" type="submit">Save new password</button>
+    <p class="center" style="margin-top:10px"><a href="#" class="link link-muted" id="pw-forgot">Forgot your current password?</a></p>
+    <p class="note hidden" id="pw-forgot-done" style="margin-top:10px"></p>
   </form>
 </section>
 
@@ -1566,7 +1568,23 @@ $('#f-profile').addEventListener('submit', async (e) => {
   } finally { busy(btn, false); }
 });
 
-$('#btn-pw').addEventListener('click', () => { const f = $('#f-password'); f.reset(); showErr(f, ''); show('password'); });
+$('#btn-pw').addEventListener('click', () => { const f = $('#f-password'); f.reset(); showErr(f, ''); $('#pw-forgot-done').classList.add('hidden'); show('password'); });
+// v0.7a.1 — signed in but can't remember the current password: email a reset link to this account.
+let pwForgotAt = 0;
+$('#pw-forgot').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const f = $('#f-password'), a = $('#pw-forgot'), done = $('#pw-forgot-done');
+  const email = S.session?.user?.email; if (!email) return;
+  if (Date.now() - pwForgotAt < 60000) { done.classList.remove('hidden'); return; } // one email a minute
+  showErr(f, ''); a.style.pointerEvents = 'none';
+  try {
+    await api('POST', '/neerly/auth/forgot', { email });
+    pwForgotAt = Date.now();
+    done.innerHTML = `📬 <b>Check your inbox.</b> We sent a link to ${esc(email)} to set a new password. It works for 15 minutes.`;
+    done.classList.remove('hidden');
+  } catch (err) { showErr(f, err.message); }
+  finally { a.style.pointerEvents = ''; }
+});
 $('#f-password').addEventListener('submit', async (e) => {
   e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
   if (f.password.value.length < 8) return showErr(f, 'New password needs at least 8 characters');
