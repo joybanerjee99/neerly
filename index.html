@@ -354,6 +354,27 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .linkonly{display:flex;gap:10px;align-items:flex-start;background:#fff4e0;color:#7a4f00;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:500;margin-top:12px}
 .linkonly b{font-weight:700}
 .lastpicks{margin-top:10px}
+/* v0.7b — quick starts, reactions, notifications, postcard */
+.qs .section-head h2{margin-top:18px}
+.qs-ready{background:var(--green-soft);color:#1f6e4a;border-radius:12px;padding:10px 14px;font-size:14px;margin-top:12px}
+.qs-edit{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;width:100%}
+.qs-row{display:flex;align-items:center;gap:8px;padding:10px 12px 10px 14px;border-bottom:1px solid var(--border)}
+.qs-row .who b{font-weight:700}
+.qs-row .chip{flex:none;font-size:13px;padding:6px 10px}
+.qs-save{margin-top:14px}
+.rx-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:6px 6px 6px 16px;margin-top:14px}
+.rx-btns{display:flex;gap:4px}
+.rx-btns button{width:46px;height:46px;border-radius:50%;font-size:24px;line-height:1;background:var(--accent-softer);transition:transform .1s}
+.rx-btns button:active{transform:scale(.9)}
+.rx-btns button.sent{animation:rxsent .45s ease}
+@keyframes rxsent{40%{transform:scale(1.25)}}
+.rx-float{position:absolute;left:50%;bottom:70%;font-size:30px;line-height:1;pointer-events:none;z-index:5;animation:rxfloat 2.2s ease-out forwards}
+@keyframes rxfloat{0%{transform:translate(-50%,0) scale(.6);opacity:0}15%{transform:translate(-50%,-14px) scale(1.15);opacity:1}100%{transform:translate(-30%,-90px) scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.rx-float{animation:none;opacity:1;transform:translate(-50%,-20px)}.rx-btns button.sent{animation:none}}
+.rx-count{font-size:14px;letter-spacing:0;text-transform:none;color:var(--sub);font-weight:700;margin-left:6px}
+.sum-rx{margin-top:10px;font-size:18px;letter-spacing:.04em}
+.sum-rx:empty{display:none}
+.pc-img{display:block;width:100%;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow)}
 </style>
 </head>
 <body>
@@ -433,6 +454,11 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <div style="flex:1;min-width:0"><b>Sharing back with <span id="sb-name"></span></b><span class="muted small">They'll get a link. Their email stays private.</span></div>
     <button class="link" id="sb-cancel">Cancel</button>
   </div>
+  <div class="qs hidden" id="qs">
+    <div class="section-head"><h2>Quick starts</h2><button id="btn-qs-edit" class="hidden">Edit</button></div>
+    <div class="chips" id="qs-list"></div>
+  </div>
+  <p class="qs-ready hidden" id="qs-ready"></p>
 
   <label class="field note-field" id="note-field">
     <span id="note-label">Heading to <span class="muted" style="display:inline;font-weight:400">(optional)</span></span>
@@ -454,14 +480,24 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <button class="addrow" id="btn-add-toggle"><span class="plus">+</span>Add someone</button>
     <form class="addform" id="f-add" novalidate>
       <div class="err"></div>
-      <label class="field"><span>Email</span><input class="input" type="email" name="email" inputmode="email" autocomplete="off" placeholder="grandma@example.com" required></label>
+      <label class="field"><span>Email, or @username if they’re on Neerly</span><input class="input" type="text" name="email" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="grandma@example.com or @ana" required></label>
       <label class="field"><span>Nickname <span class="muted" style="display:inline;font-weight:400">(optional)</span></span><input class="input" name="nickname" autocomplete="off" placeholder="Grandma"></label>
       <div class="row"><button type="button" class="btn btn-outline" id="btn-add-cancel">Cancel</button><button type="submit" class="btn btn-primary">Add</button></div>
     </form>
   </div>
   <div class="chips lastpicks hidden" id="lastpicks"></div>
   <div class="linkonly hidden" id="linkonly"><span>🔗</span><span><b>Nobody picked, so no email goes out.</b> You’ll get a link to send yourself in WhatsApp, iMessage, anywhere. Tap a name above to email them.</span></div>
-  <p class="muted small" style="margin-top:10px">They'll get an email with a link. No app or account needed to watch.</p>
+  <p class="muted small" style="margin-top:10px">They'll get an email with a link. No app or account needed to watch. Friends on Neerly can be added by @username, and their email stays private.</p>
+  </div>
+
+  <div class="qs-save">
+    <p class="center"><button type="button" class="link small" id="btn-qs-save">☆ Save this as a quick start</button></p>
+    <form class="card hidden" id="f-qs" novalidate>
+      <div class="err"></div>
+      <label class="field"><span>Name</span><input class="input" name="name" maxlength="30" autocomplete="off" placeholder="Gym, Home from work…" required></label>
+      <p class="muted small" style="margin:-4px 0 14px" id="qs-save-what"></p>
+      <div class="row"><button type="button" class="btn btn-outline" id="btn-qs-cancel">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
   </div>
 
   <div class="sticky-cta">
@@ -497,13 +533,17 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <div class="txt"><b>🔔 Tell me when someone starts watching</b><span class="sub">A soft chime while this screen is open</span></div>
     <span class="switch on" id="chime-switch"></span>
   </div>
+  <div class="switch-row compact hidden" id="push-row" role="button" tabindex="0">
+    <div class="txt"><b>📲 Buzz me, even with the phone locked</b><span class="sub">When someone starts watching or reacts</span></div>
+    <span class="switch"></span>
+  </div>
 
   <div class="row" style="margin-top:16px">
     <button class="btn btn-ghost" id="btn-copy">Copy link</button>
     <button class="btn btn-ghost" id="btn-sharesheet">Send via…</button>
   </div>
 
-  <h2>Who's watching</h2>
+  <h2>Who's watching<span class="rx-count" id="live-rx"></span></h2>
   <div class="rlist" id="live-recipients"></div>
 
   <h2>Need longer?</h2>
@@ -528,10 +568,12 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
       <div><b id="sum-watch">–</b><span id="sum-watch-l">viewers</span></div>
     </div>
     <p class="sumwho" id="sum-who"></p>
+    <p class="sum-rx" id="sum-rx"></p>
     <p class="lifetime" id="sum-life"></p>
     <div class="sum-badges" id="sum-badges"></div>
   </div>
-  <button class="btn btn-primary" data-go="share" style="margin-top:24px">Share again</button>
+  <button class="btn btn-ghost hidden" id="btn-postcard" style="margin-top:20px">🖼️ Make a trip postcard</button>
+  <button class="btn btn-primary" data-go="share" style="margin-top:12px">Share again</button>
   <p class="center" style="margin-top:10px"><a href="#" class="link" data-go="profile">See your stats</a></p>
 </section>
 
@@ -564,6 +606,16 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <img src="neerly-assets/apple-touch-icon.png" alt="" id="p-install-icon">
     <div style="flex:1"><b>Put Neerly on your home screen</b><p class="muted small" id="p-install-how" style="margin-top:4px"></p><ol class="ios-steps hidden" id="p-install-steps"></ol>
       <button class="btn btn-primary hidden" id="btn-install" style="margin-top:10px;min-height:44px;padding:10px 16px;font-size:15px">Add to Home Screen</button></div>
+  </div>
+  <h2>Notifications</h2>
+  <div class="card" id="p-push">
+    <div class="switch-row" id="push-prow" role="switch" aria-checked="false" tabindex="0" style="margin-top:0;border:none;padding:0">
+      <div class="txt"><b>🔔 Notifications on this device</b></div>
+      <span class="switch" id="push-switch"></span>
+    </div>
+    <p class="muted small" id="push-text" style="margin-top:8px"></p>
+    <ol class="ios-steps hidden" id="push-steps"></ol>
+    <button class="btn btn-ghost hidden" id="btn-push-test" style="margin-top:12px;min-height:44px;font-size:15px">Send me a test</button>
   </div>
   <h2>Account</h2>
   <div class="alist">
@@ -642,6 +694,7 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <div class="bar" style="margin-top:0"><i id="r-bar" style="width:100%"></i></div>
     <p class="center"><b id="r-timer" style="font-variant-numeric:tabular-nums;font-size:20px">--:--</b> <span class="muted">left in this share</span></p>
   </div>
+  <div class="rx-bar hidden" id="r-rx"><span class="muted small" style="font-weight:600">Send <span class="sender-name"></span> a reaction</span><div class="rx-btns" id="r-rx-btns"></div></div>
   <button class="btn btn-ghost" id="btn-shareback" style="margin-top:20px">Share my location back</button>
   <p class="muted small center" style="margin-top:14px" id="r-foot">Neerly shares are time-limited. When this one ends, <span class="sender-name"></span>'s location disappears.</p>
 </section>
@@ -733,6 +786,17 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <div class="stack" style="margin-top:18px"><button class="btn btn-primary" id="cel-next">Nice!</button></div>
   </div>
 </div>
+<div class="scrim" id="postcard">
+  <div class="sheet">
+    <img class="pc-img" id="pc-img" alt="Your trip postcard">
+    <p class="muted small center" style="margin-top:10px">Made on your phone. Neerly doesn’t keep it, and the start and end of the route are left off.</p>
+    <div class="stack" style="margin-top:14px">
+      <button class="btn btn-primary hidden" id="pc-share">Share…</button>
+      <a class="btn btn-ghost" id="pc-save" download="neerly-postcard.png" style="text-decoration:none">Save image</a>
+      <button class="btn btn-outline" id="pc-close">Close</button>
+    </div>
+  </div>
+</div>
 <nav class="tabbar" id="tabbar" aria-label="Neerly">
   <div class="in">
     <button type="button" data-tab="share"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span class="live-dot"></span>Share</button>
@@ -798,6 +862,10 @@ const S = {
   watch: null,            // Watching tab: { friends, map, meWatchId, meFix, verifySent }
   watchCount: 0,          // live shares sent to me (tab badge)
   badgeTimer: null,
+  // v0.7b
+  presets: [], qsEditing: false, qsApplied: null,
+  rxLast: null,           // the newest reaction already shown on the live screen
+  lastTrip: null,         // the share that just ended, for the postcard (kept in memory only)
 };
 const serverNow = () => Date.now() + S.offset;
 
@@ -853,8 +921,8 @@ function ago(ts) {
   const m = Math.round(s / 60);
   return `${m} min ago`;
 }
-function displayName(c) { return c.nickname || c.email.split('@')[0]; }
-function initials(c) { const n = (c.nickname || c.email).trim(); return (n[0] || '?').toUpperCase(); }
+function displayName(c) { return c.nickname || (c.email ? (c.email.startsWith('@') ? c.email : c.email.split('@')[0]) : '@' + (c.username || '')); }
+function initials(c) { const n = String(c.nickname || c.email || c.username || '?').replace(/^@/, '').trim(); return (n[0] || '?').toUpperCase(); }
 function listNames(names) {
   if (names.length === 1) return names[0];
   if (names.length === 2) return `${names[0]} and ${names[1]}`;
@@ -1177,12 +1245,13 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
         setTrail(points) { if (!here) line.setPath(points.map(([a, b]) => ({ lat: a, lng: b }))); },
         setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; marker.setIcon(pinIcon()); },
         setBubble() {}, // Google Maps: the status stays in the header for now
+        pop(emoji) { const s = document.createElement('span'); s.className = 'rx-float'; s.textContent = emoji; s.style.bottom = '50%'; el.parentElement.appendChild(s); setTimeout(() => s.remove(), 2300); },
         destroy() { el.innerHTML = ''; },
       };
     } catch (e) { console.warn('Google Maps failed, falling back to OpenStreetMap', e); }
   }
 
-  if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. Location updates still work.</div>'; return { set() {}, setTrail() {}, setWeather() {}, setBubble() {}, destroy() {} }; }
+  if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. Location updates still work.</div>'; return { set() {}, setTrail() {}, setWeather() {}, setBubble() {}, pop() {}, destroy() {} }; }
   if (el._leaflet_id) { el._leaflet_id = null; el.innerHTML = ''; } // v0.7a fix: never "Map container is already initialized"
   const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
   map.attributionControl.setPrefix(false); // drop Leaflet's own link + flag; the OpenStreetMap credit (required by its licence) stays
@@ -1212,6 +1281,13 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
     setTrail(points) { if (trail) trail.setPoints(points); },
     setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; pin.setIcon(pinIcon()); },
     setBubble(html) { html = html || ''; if (html === bubble) return; bubble = html; pin.setIcon(pinIcon()); },
+    // v0.7b: a reaction floats up from the buddy.
+    pop(emoji) {
+      const host = placed && pin.getElement();
+      const s = document.createElement('span'); s.className = 'rx-float'; s.textContent = emoji;
+      if (host) host.appendChild(s); else { s.style.bottom = '50%'; el.parentElement.appendChild(s); }
+      setTimeout(() => s.remove(), 2300);
+    },
     destroy() { map.remove(); },
   };
 }
@@ -1411,7 +1487,7 @@ async function afterSignIn() {
   cleanUrl();
   const me = await api('GET', '/neerly/me');
   setMe(me);
-  startBadgeTimer();
+  startBadgeTimer(); syncPush();
   if (me.activeShare) { S.share = me.activeShare; return goLive(); }
   if (!me.user.avatar) return openBuddyPicker();   // new accounts (and pre-v0.4 ones) pick a buddy once
   return openShare();
@@ -1542,6 +1618,7 @@ function renderProfile() {
     return `<div class="btile ${b.seen ? '' : 'new'}">${medalHtml(b.id)}<b>${esc(info.name)}</b><span>${esc(when)}</span></div>`;
   }).join('') + (left ? `<div class="btile more"><span class="medal mystery">?</span><b>${left} more</b><span>to discover</span></div>` : '');
   renderInstall();
+  renderPush();
   setTimeout(celebrateNewBadges, 300);
 }
 $('#profile-back').addEventListener('click', (e) => { e.preventDefault(); S.share ? goLive() : openShare(); });
@@ -1627,7 +1704,7 @@ $('#f-password').addEventListener('submit', async (e) => {
 
 $('#btn-signout').addEventListener('click', () => {
   modal('Sign out?', S.session?.user?.email || '', [
-    { label: 'Sign out', cls: 'btn-outline', fn: async () => { try { await api('POST', '/neerly/auth/signout'); } catch {} signOutLocal(); show('signin'); } },
+    { label: 'Sign out', cls: 'btn-outline', fn: async () => { await disablePush(true); try { await api('POST', '/neerly/auth/signout'); } catch {} signOutLocal(); show('signin'); } },
     { label: 'Cancel', cls: 'btn-ghost' },
   ]);
 });
@@ -1639,6 +1716,7 @@ $('#f-delete').addEventListener('submit', async (e) => {
   busy(btn, true);
   try {
     await api('POST', '/neerly/me/delete', { password: f.password.value });
+    try { const s = await currentSub(); if (s) await s.unsubscribe(); } catch {} store.del(pushKey());
     if (S.share) { clearTimers(); stopWatch(); releaseWakeLock(); S.share = null; }
     signOutLocal(); f.reset(); show('signin'); toast('Your account is deleted');
   } catch (err) { showErr(f, err.message); }
@@ -1653,8 +1731,14 @@ async function openShare() {
   paintBuddy($('#me-buddy'), myBuddy(), myLook().outfit);
   renderShareBack();
   show('share');
-  S.editing = false; renderContacts(); updateShareHint();
-  try { const d = await api('GET', '/neerly/contacts'); S.contacts = d.contacts; renderContacts(); updateShareHint(); }
+  S.editing = false; S.qsEditing = false; S.qsApplied = null; $('#qs-ready').classList.add('hidden');
+  $('#f-qs').classList.add('hidden'); $('#btn-qs-save').classList.remove('hidden');
+  renderContacts(); updateShareHint(); renderPresets();
+  try {
+    const [c, pr] = await Promise.all([api('GET', '/neerly/contacts'), api('GET', '/neerly/presets').catch(() => ({ presets: [] }))]);
+    S.contacts = c.contacts; S.presets = pr.presets || [];
+    renderContacts(); updateShareHint(); renderPresets(); takePendingPreset();
+  }
   catch (err) { if (err.status !== 401) toast(err.message); else show('signin'); }
 }
 
@@ -1711,13 +1795,13 @@ function renderContacts() {
   $('#btn-edit-contacts').classList.toggle('hidden', !S.contacts.length);
   $('#btn-edit-contacts').textContent = S.editing ? 'Done' : 'Edit';
   // drop selections for deleted contacts
-  for (const e of [...S.selected]) if (!S.contacts.some(c => c.email === e)) S.selected.delete(e);
+  for (const e of [...S.selected]) if (!S.contacts.some(c => ckey(c) === e)) S.selected.delete(e);
   if (!S.contacts.length) { list.innerHTML = '<div class="empty">No one saved yet. Add someone below — or skip it and just send the link.</div>'; return; }
   list.innerHTML = S.contacts.map(c => `
-    <div class="contact ${S.selected.has(c.email) ? 'on' : ''}" role="button" tabindex="0" data-email="${esc(c.email)}">
+    <div class="contact ${S.selected.has(ckey(c)) ? 'on' : ''}" role="button" tabindex="0" data-email="${esc(ckey(c))}">
       <span class="check"></span>
       <span class="avatar">${esc(initials(c))}</span>
-      <span class="who"><b>${esc(displayName(c))}</b><span>${esc(c.email)}</span></span>
+      <span class="who"><b>${esc(displayName(c))}</b><span>${esc(c.email || (c.nickname ? '@' + c.username + ' · on Neerly' : 'On Neerly · email private'))}</span></span>
       <button class="del" data-del="${c.id}">Remove</button>
     </div>`).join('');
 }
@@ -1746,11 +1830,14 @@ function closeAdd() { const f = $('#f-add'); f.reset(); showErr(f, ''); f.classL
 $('#f-add').addEventListener('submit', async (e) => {
   e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
   const email = f.email.value.trim(), nickname = f.nickname.value.trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  // v0.7b: "@ana" (or just "ana") adds a friend who's on Neerly by username; their address stays private.
+  const byName = email.startsWith('@') || !email.includes('@');
+  if (!byName && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(f, 'That email doesn’t look right');
+  if (byName && !/^@?[a-z0-9._]{3,20}$/i.test(email)) return showErr(f, 'Add an email, or a Neerly @username');
   busy(btn, true);
   try {
-    const d = await api('POST', '/neerly/contacts', { email, nickname });
-    S.contacts = d.contacts; S.selected.add(d.contact.email);
+    const d = await api('POST', '/neerly/contacts', byName ? { username: email.replace(/^@/, ''), nickname } : { email, nickname });
+    S.contacts = d.contacts; S.selected.add(ckey(d.contact));
     closeAdd(); renderContacts(); updateShareHint();
   } catch (err) { showErr(f, err.message); }
   finally { busy(btn, false); }
@@ -1792,10 +1879,10 @@ function updateShareHint() {
     $('#share-hint').textContent = `${S.shareBack.name} gets an email with your live link. We'll copy the link too.`;
     return;
   }
-  const picked = S.contacts.filter(c => S.selected.has(c.email));
+  const picked = S.contacts.filter(c => S.selected.has(ckey(c)));
   if (!btn.disabled) btn.textContent = picked.length ? shareButtonLabel() : `${shareButtonLabel()} · link only`;
   $('#share-hint').textContent = picked.length
-    ? `${listNames(picked.map(displayName))} will get an email. We'll copy the link too.`
+    ? `${listNames(picked.map(displayName))} will ${picked.every(c => !c.email) ? 'get a notification' : 'get an email'}. We'll copy the link too.`
     : 'No email goes out. We’ll copy the link for you to send.';
   // v0.7a: make "nobody picked" impossible to miss, and offer last time's people in one tap.
   $('#linkonly').classList.toggle('hidden', !!picked.length);
@@ -1804,15 +1891,15 @@ function updateShareHint() {
 function lastPicksKey() { return 'neerly_lastpicks_' + (S.session?.user?.email || ''); }
 function renderLastPicks(nPicked) {
   const box = $('#lastpicks');
-  const last = (store.get(lastPicksKey()) || []).filter(e => S.contacts.some(c => c.email === e));
+  const last = (store.get(lastPicksKey()) || []).filter(e => S.contacts.some(c => ckey(c) === e));
   if (nPicked || !last.length || S.shareBack) { box.classList.add('hidden'); return; }
-  const names = last.map(e => displayName(S.contacts.find(c => c.email === e)));
+  const names = last.map(e => displayName(S.contacts.find(c => ckey(c) === e)));
   box.innerHTML = `<button type="button" class="chip" id="btn-lastpicks">↺ Same as last time: ${esc(listNames(names))}</button>`;
   box.classList.remove('hidden');
 }
 $('#lastpicks').addEventListener('click', (e) => {
   if (!e.target.closest('#btn-lastpicks')) return;
-  for (const em of store.get(lastPicksKey()) || []) if (S.contacts.some(c => c.email === em)) S.selected.add(em);
+  for (const em of store.get(lastPicksKey()) || []) if (S.contacts.some(c => ckey(c) === em)) S.selected.add(em);
   renderContacts(); updateShareHint();
 });
 
@@ -1839,7 +1926,9 @@ $('#btn-share').addEventListener('click', async () => {
     S.fix = pos;
     btn.innerHTML = '<span class="spinner"></span>Starting your share…';
     const sb = S.shareBack;
-    const recipients = sb ? [] : S.contacts.filter(c => S.selected.has(c.email)).map(c => ({ email: c.email, nickname: c.nickname }));
+    const pickedC = sb ? [] : S.contacts.filter(c => S.selected.has(ckey(c)));
+    const recipients = pickedC.map(recipOf);
+    const setup = sb ? null : currentSetup();
     const d = await api('POST', '/neerly/shares', { minutes: S.minutes, recipients, lat: pos?.lat, lng: pos?.lng, accuracy: pos?.accuracy,
       mode, note, showLocation: withLoc,
       tzOffset: new Date().getTimezoneOffset(), shareBack: sb ? sb.token : undefined });
@@ -1849,8 +1938,9 @@ $('#btn-share').addEventListener('click', async () => {
     $('#note-input').value = ''; renderChips();
     const copied = await copyText(S.share.link);
     toast(d.shareBackTo ? `Shared back with ${d.shareBackTo}` : recipients.length ? (copied ? 'Shared — emails sent and link copied' : 'Shared — emails on their way') : (copied ? 'Link copied — paste it anywhere' : 'You’re live — send the link below'));
-    if (recipients.length) store.set(lastPicksKey(), recipients.map(r => r.email));
-    S.selected.clear();
+    if (recipients.length) store.set(lastPicksKey(), pickedC.map(ckey));
+    if (setup) store.set(lastShareKey(), setup); // v0.7b: "↺ Repeat last" next time
+    S.selected.clear(); S.qsApplied = null; $('#qs-ready').classList.add('hidden');
     goLive();
   } catch (err) {
     errEl.textContent = err.message; errEl.classList.add('on');
@@ -1947,6 +2037,7 @@ async function goLive() {
   show('live');
   $('#live-banner').classList.remove('on');
   S.prevWatch = null; closeNoteEdit(); renderChimeSwitch();
+  S.rxLast = S.share?.reactionsLastId ?? null; renderPush();
   renderLive(); renderLiveNote();
   if (S.map) { S.map.destroy(); S.map = null; }
   const hasMap = shareHasMap(S.share);
@@ -2000,16 +2091,17 @@ async function syncLive() {
     const tok = encodeURIComponent(S.share.token);
     if (S.fix && S.fix.ts > S.pushedFixTs && shareHasMap(S.share)) {
       const fix = S.fix;
-      d = await api('POST', `/neerly/shares/${tok}/location`, { lat: fix.lat, lng: fix.lng, accuracy: fix.accuracy, trailFrom: S.trail.length });
+      d = await api('POST', `/neerly/shares/${tok}/location`, { lat: fix.lat, lng: fix.lng, accuracy: fix.accuracy, trailFrom: S.trail.length, rxFrom: S.rxLast ?? undefined });
       S.pushedFixTs = fix.ts;
     } else {
-      d = await api('GET', `/neerly/shares/${tok}/status?t=${S.trail.length}`);
+      d = await api('GET', `/neerly/shares/${tok}/status?t=${S.trail.length}${S.rxLast != null ? '&rx=' + S.rxLast : ''}`);
     }
     S.share = d.share;
     if (!S.share.active) return endLive();
     applyLiveTrail(S.share);
     if (S.map) S.map.setWeather(S.share.weather);
     checkNewWatchers(S.share);
+    showReactions(S.share); // after the watcher chime, so a reaction's toast isn't replaced by "… is watching"
     renderLive();
   } catch (err) {
     if (err.status === 410) { S.share = err.body?.share || S.share; return endLive(); }
@@ -2058,7 +2150,7 @@ function renderLive() {
   let html = rs.map(r => `
     <div class="ritem">
       <span class="avatar">${esc(initials(r))}</span>
-      <span class="who"><b>${esc(displayName(r))}</b><span>${esc(r.email)}</span></span>
+      <span class="who"><b>${esc(displayName(r))}</b><span>${esc(!r.email.startsWith('@') ? r.email : r.nickname === r.email ? 'On Neerly · email private' : r.email + ' · on Neerly')}</span></span>
       <span class="status ${r.status}">${label[r.status]}</span>
     </div>`).join('');
   if (linkW) html += `<div class="ritem"><span class="avatar">🔗</span><span class="who"><b>Via your link</b><span>Opened from a shared link</span></span><span class="status watching">👁 ${linkW} watching</span></div>`;
@@ -2109,12 +2201,16 @@ function endLive(stopped) {
   if (onLive) clearTimers();
   stopLiveSync(); stopWatch(); releaseWakeLock();
   if (S.map) { S.map.destroy(); S.map = null; }
-  S.fix = null; S.pushedFixTs = 0; S.trail = [];
+  S.fix = null; S.pushedFixTs = 0;
   const was = S.share || {};
+  // v0.7b: the trip for the postcard, in memory only (gone on reload, like the trail on the server).
+  S.lastTrip = was.mode === 'way' ? { trail: (S.trail || []).slice(), note: was.note || '', distanceM: was.summary?.distanceM ?? was.distanceM ?? 0,
+    minutes: was.summary?.minutes ?? Math.round(((was.endedAt || serverNow()) - was.startedAt) / 60000), startedAt: was.startedAt,
+    buddy: myBuddy(), outfit: myLook().outfit, trailStyle: myLook().trail } : null;
   const what = was.mode === 'now' ? (shareHasMap(was) ? 'Your status and spot aren’t being shared anymore, and nothing is kept.' : 'Your status isn’t being shared anymore.')
     : 'Your location isn’t being shared anymore, and your route isn’t kept.';
   $('#ended-sub').textContent = (stopped ? 'You stopped sharing. ' : 'Time’s up. ') + what;
-  S.prevWatch = null;
+  S.prevWatch = null; S.trail = []; S.rxLast = null;
   renderSummary(S.share?.summary, S.share);
   S.share = null;
   if (onLive || !S.session) show('ended');
@@ -2142,6 +2238,9 @@ function renderSummary(sum, sh) {
   else if (link) line = `${link} ${link === 1 ? 'person' : 'people'} watched via your link`;
   else line = 'No one opened it this time.';
   $('#sum-who').textContent = line;
+  const rx = sum?.reactions || sh?.reactionCounts || {};
+  $('#sum-rx').textContent = Object.entries(rx).map(([e, n]) => `${e} ${n}`).join('   ');
+  $('#btn-postcard').classList.toggle('hidden', !S.lastTrip);
   $('#sum-life').textContent = '';
 }
 async function refreshLifetime() {
@@ -2473,6 +2572,7 @@ function renderRecipLive() {
   if (loc && R.map) R.map.set(loc.lat, loc.lng, loc.accuracy);
   $('#r-directions').href = loc ? `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}` : '#';
   $('#r-directions').style.visibility = loc ? 'visible' : 'hidden';
+  renderReactBar();
   tickRecip();
 }
 
@@ -2572,6 +2672,322 @@ $('#f-rsignup').addEventListener('submit', async (e) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// v0.7b — Push notifications
+// The service worker (neerly-sw.js) shows them. On iPhone they work once Neerly is on the Home Screen.
+// localStorage remembers which endpoint this account registered, so a shared phone doesn't mix accounts.
+// ─────────────────────────────────────────────────────────────────────────────
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const pushKey = () => 'neerly_push_' + (S.session?.user?.email || '');
+let swReg = null;
+async function swReady() {
+  if (!('serviceWorker' in navigator)) return null;
+  try { swReg = swReg || await navigator.serviceWorker.register('neerly-sw.js'); return swReg; } catch { return null; }
+}
+async function currentSub() { const r = await swReady(); try { return r ? await r.pushManager.getSubscription() : null; } catch { return null; } }
+function b64uToBytes(s) {
+  const b = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4));
+  return Uint8Array.from(b, c => c.charCodeAt(0));
+}
+function sameKey(sub, key) {
+  try { const a = new Uint8Array(sub.options.applicationServerKey), b = b64uToBytes(key); return a.length === b.length && a.every((x, i) => x === b[i]); } catch { return true; }
+}
+// 'on' | 'off' | 'denied' | 'ios-home' (iPhone, not on the Home Screen yet) | 'unsupported'
+async function pushState() {
+  if (!pushSupported()) return isIOS() && !isStandalone() ? 'ios-home' : 'unsupported';
+  if (Notification.permission === 'denied') return 'denied';
+  if (Notification.permission !== 'granted') return 'off';
+  const s = await currentSub();
+  return s && store.get(pushKey()) === s.endpoint ? 'on' : 'off';
+}
+// Must start inside a tap: iPhone only shows the permission prompt for a direct tap.
+async function enablePush() {
+  if (!pushSupported()) return false;
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { toast(perm === 'denied' ? 'Notifications are blocked. Turn them on in your browser’s site settings.' : 'No problem. You can turn them on later in your profile.', 3800); return false; }
+  try {
+    const reg = await swReady(); if (!reg) throw new Error('This browser can’t show notifications.');
+    const { key } = await api('GET', '/neerly/push/key');
+    let sub = await reg.pushManager.getSubscription();
+    if (sub && !sameKey(sub, key)) { try { await sub.unsubscribe(); } catch {} sub = null; }
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(key) });
+    await api('POST', '/neerly/me/push', { subscription: sub.toJSON() });
+    store.set(pushKey(), sub.endpoint);
+    return true;
+  } catch (err) { toast(err.message || 'Couldn’t turn on notifications', 3500); return false; }
+}
+async function disablePush(silent) {
+  const s = await currentSub();
+  if (s) { try { await api('POST', '/neerly/me/push/delete', { endpoint: s.endpoint }); } catch {} try { await s.unsubscribe(); } catch {} }
+  store.del(pushKey());
+  if (!silent) toast('Notifications are off on this device');
+}
+// After sign-in: if this device has notifications on for this account, keep the server's copy current.
+async function syncPush() {
+  if (!pushSupported() || Notification.permission !== 'granted' || !store.get(pushKey())) return;
+  const s = await currentSub();
+  if (s && s.endpoint !== store.get(pushKey())) { try { await api('POST', '/neerly/me/push', { subscription: s.toJSON() }); store.set(pushKey(), s.endpoint); } catch {} }
+  else if (!s) store.del(pushKey());
+}
+
+async function renderPush() {
+  const st = await pushState();
+  const sw = $('#push-switch'), row = $('#push-prow');
+  sw.classList.toggle('on', st === 'on'); row.setAttribute('aria-checked', st === 'on');
+  row.classList.toggle('hidden', st === 'ios-home' || st === 'unsupported');
+  $('#push-steps').classList.toggle('hidden', st !== 'ios-home');
+  if (st === 'ios-home') $('#push-steps').innerHTML = iosStepsHtml();
+  $('#btn-push-test').classList.toggle('hidden', st !== 'on');
+  $('#push-text').textContent = {
+    on: 'You’ll get a buzz when someone starts watching, reacts, shares with you or asks where you are, even with your phone locked.',
+    off: 'Get a buzz when someone starts watching, reacts, shares with you or asks where you are, even with your phone locked.',
+    denied: 'Notifications are blocked for Neerly. Turn them on in your browser’s site settings, then come back here.',
+    'ios-home': 'On iPhone, notifications work once Neerly is on your Home Screen. Three taps in Safari:',
+    unsupported: 'This browser can’t show notifications. Neerly will still email you.',
+  }[st];
+  // The live screen offers the same switch while you share, until it's on.
+  $('#push-row').classList.toggle('hidden', st !== 'off');
+}
+async function togglePush() {
+  const on = $('#push-switch').classList.contains('on');
+  if (on) await disablePush(); else if (await enablePush()) toast('Notifications are on 🔔');
+  renderPush();
+}
+$('#push-prow').addEventListener('click', togglePush);
+$('#push-prow').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePush(); } });
+$('#push-row').addEventListener('click', async () => { if (await enablePush()) toast('Done. You’ll get a buzz even with the phone locked 🔔', 3200); renderPush(); });
+$('#btn-push-test').addEventListener('click', async () => {
+  const btn = $('#btn-push-test'); busy(btn, true);
+  try { const d = await api('POST', '/neerly/me/push/test'); toast(d.devices ? 'Sent. It should pop up in a moment' : 'Couldn’t reach this device. Turn notifications off and on again.', 3200); }
+  catch (err) { toast(err.message); } finally { busy(btn, false); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.7b — Quick starts (presets) and "Repeat last"
+// A quick start fills in the share screen (mode, how long, destination or status, people); one tap on
+// Share starts it. Its link (?preset=…) does the same from an iPhone Shortcut or a bookmark.
+// ─────────────────────────────────────────────────────────────────────────────
+const ckey = (c) => c.email || 'c:' + c.id;                       // contacts added by @username have no address
+const recipOf = (c) => c.email ? { email: c.email, nickname: c.nickname } : { contact: c.id };
+const keyOfPerson = (p) => p.email || 'c:' + p.contact;
+const lastShareKey = () => 'neerly_lastshare_' + (S.session?.user?.email || '');
+function shareDesc(x) {
+  const parts = [];
+  parts.push(x.mode === 'now' ? (x.note || (x.showLocation === false ? 'Status' : 'Where I am')) : (x.note ? `To ${x.note}` : 'On my way'));
+  parts.push(fmtMins(x.minutes));
+  const names = (x.people || []).map(p => S.contacts.find(c => ckey(c) === keyOfPerson(p))).filter(Boolean).map(displayName);
+  if (names.length) parts.push(listNames(names));
+  return parts.join(' · ');
+}
+function renderPresets() {
+  const box = $('#qs'), list = $('#qs-list');
+  const last = store.get(lastShareKey());
+  const presets = S.presets || [];
+  const showLast = !!last && !S.shareBack;
+  box.classList.toggle('hidden', !(presets.length || showLast) || !!S.shareBack);
+  $('#btn-qs-edit').classList.toggle('hidden', !presets.length);
+  $('#btn-qs-edit').textContent = S.qsEditing ? 'Done' : 'Edit';
+  if (S.qsEditing && presets.length) {
+    list.innerHTML = `<div class="qs-edit">${presets.map(p => `<div class="qs-row"><div class="who"><b>⚡ ${esc(p.name)}</b><span>${esc(shareDesc(p))}</span></div>
+      <button type="button" class="chip" data-qs-copy="${esc(p.pid)}">🔗 Link</button><button type="button" class="del" style="display:block" data-qs-del="${esc(p.pid)}">Remove</button></div>`).join('')}
+      <p class="muted small" style="padding:10px 14px">Each link opens Neerly ready to go. On iPhone, add it to a Shortcut (“Open URLs”) for one-tap sharing.</p></div>`;
+    return;
+  }
+  list.innerHTML = (showLast ? `<button type="button" class="chip" data-qs-last title="${esc(shareDesc(last))}">↺ Repeat last</button>` : '')
+    + presets.map(p => `<button type="button" class="chip ${S.qsApplied === p.pid ? 'on' : ''}" data-qs="${esc(p.pid)}" title="${esc(shareDesc(p))}">⚡ ${esc(p.name)}</button>`).join('');
+}
+function applyShareSetup(x, label) {
+  if (x.mode !== S.mode) setMode(x.mode);
+  if (DURATIONS_BY_MODE[x.mode].some(([m]) => m === x.minutes)) S.minutesBy[x.mode] = x.minutes;
+  renderDurations();
+  $('#note-input').value = x.note || ''; renderChips();
+  S.showLoc = x.mode === 'way' ? true : x.showLocation !== false; renderLocSwitch();
+  S.selected = new Set((x.people || []).map(keyOfPerson).filter(k => S.contacts.some(c => ckey(c) === k)));
+  renderContacts(); updateShareHint();
+  const desc = shareDesc(x);
+  $('#qs-ready').innerHTML = `<b>${esc(label)}</b> · ${esc(desc)}. Tap the button below to start.`;
+  $('#qs-ready').classList.remove('hidden');
+}
+$('#qs-list').addEventListener('click', async (e) => {
+  const copy = e.target.closest('[data-qs-copy]');
+  if (copy) { const p = S.presets.find(x => x.pid === copy.dataset.qsCopy); if (p) toast(await copyText(p.link) ? 'Link copied. Paste it into a Shortcut or a bookmark' : p.link, 3500); return; }
+  const del = e.target.closest('[data-qs-del]');
+  if (del) {
+    busy(del, true);
+    try { S.presets = (await api('POST', '/neerly/presets/delete', { pid: del.dataset.qsDel })).presets; if (!S.presets.length) S.qsEditing = false; renderPresets(); }
+    catch (err) { toast(err.message); busy(del, false); }
+    return;
+  }
+  if (e.target.closest('[data-qs-last]')) { const last = store.get(lastShareKey()); if (last) { S.qsApplied = null; applyShareSetup(last, '↺ Same as last time'); renderPresets(); } return; }
+  const b = e.target.closest('[data-qs]'); if (!b) return;
+  const p = (S.presets || []).find(x => x.pid === b.dataset.qs); if (!p) return;
+  S.qsApplied = p.pid; applyShareSetup(p, '⚡ ' + p.name); renderPresets();
+});
+$('#btn-qs-edit').addEventListener('click', () => { S.qsEditing = !S.qsEditing; renderPresets(); });
+function currentSetup() {
+  return { mode: S.mode, minutes: S.minutes, note: $('#note-input').value.trim(), showLocation: S.mode === 'way' || S.showLoc,
+    people: S.contacts.filter(c => S.selected.has(ckey(c))).map(c => c.email ? { email: c.email } : { contact: c.id }) };
+}
+$('#btn-qs-save').addEventListener('click', () => {
+  const f = $('#f-qs'); showErr(f, '');
+  const x = currentSetup();
+  f.name.value = x.note ? x.note.replace(/^\p{Extended_Pictographic}\s*/u, '').slice(0, 30) : '';
+  $('#qs-save-what').textContent = shareDesc(x);
+  f.classList.remove('hidden'); $('#btn-qs-save').classList.add('hidden'); f.name.focus();
+});
+$('#btn-qs-cancel').addEventListener('click', () => { $('#f-qs').classList.add('hidden'); $('#btn-qs-save').classList.remove('hidden'); });
+$('#f-qs').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); showErr(f, '');
+  const name = f.name.value.trim(); if (!name) return showErr(f, 'Give it a name, like “Gym” or “Home from work”');
+  busy(btn, true);
+  try {
+    const d = await api('POST', '/neerly/presets', { name, ...currentSetup() });
+    S.presets = d.presets; S.qsApplied = d.preset.pid;
+    f.classList.add('hidden'); $('#btn-qs-save').classList.remove('hidden'); renderPresets();
+    toast(`Saved “${name}”. Find its Shortcut link under Quick starts → Edit`, 3500);
+  } catch (err) { showErr(f, err.message); }
+  finally { busy(btn, false); }
+});
+// ?preset=… from a Shortcut or bookmark: open the share screen with it filled in (never starts on its own).
+function takePendingPreset() {
+  let pid = null; try { pid = sessionStorage.getItem('neerly_preset'); sessionStorage.removeItem('neerly_preset'); } catch {}
+  if (!pid) return;
+  const p = (S.presets || []).find(x => x.pid === pid);
+  if (!p) { toast('That quick start isn’t on this account', 3200); return; }
+  S.qsApplied = p.pid; applyShareSetup(p, '⚡ ' + p.name); renderPresets();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.7b — Reactions
+// Watchers tap ❤️ 👋 👍 😂; it floats up from the buddy on the sender's screen (and buzzes their phone).
+// ─────────────────────────────────────────────────────────────────────────────
+function renderReactBar() {
+  const sh = S.recip?.share, box = $('#r-rx');
+  const list = sh?.active && Array.isArray(sh.reactions) ? sh.reactions : [];
+  box.classList.toggle('hidden', !list.length);
+  if (list.length && $('#r-rx-btns').dataset.n !== String(list.length)) {
+    $('#r-rx-btns').innerHTML = list.map(e => `<button type="button" data-rx="${esc(e)}" aria-label="Send ${esc(e)}">${esc(e)}</button>`).join('');
+    $('#r-rx-btns').dataset.n = String(list.length);
+  }
+}
+$('#r-rx-btns').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-rx]'); const R = S.recip; if (!b || !R?.share) return;
+  const emoji = b.dataset.rx;
+  b.classList.remove('sent'); void b.offsetWidth; b.classList.add('sent');
+  if (R.map) R.map.pop(emoji); else popNoMap($('#r-nomap'), emoji);
+  try {
+    await api('POST', `/neerly/shares/${encodeURIComponent(R.token)}/react`, R.r ? { emoji, r: R.r } : { emoji, v: R.viewerId });
+    toast(`Sent ${emoji} to ${R.share.senderName}`, 1600);
+  } catch (err) { toast(err.message); }
+});
+// No map (Right now without a location): the emoji floats up from the big buddy instead.
+function popNoMap(card, emoji) {
+  const b = card && $('.buddy', card); if (!b) return;
+  const s = document.createElement('span'); s.className = 'rx-float'; s.textContent = emoji;
+  b.style.position = 'relative'; b.appendChild(s); setTimeout(() => s.remove(), 2300);
+}
+function showReactions(sh) {
+  // Counts beside "Who's watching", and each new one popped above the buddy with a toast.
+  const counts = sh.reactionCounts || {};
+  $('#live-rx').textContent = Object.entries(counts).map(([e, n]) => `${e} ${n}`).join('  ');
+  if (S.rxLast == null) { S.rxLast = sh.reactionsLastId || 0; return; }
+  const fresh = (sh.reactions || []).filter(x => x.id > S.rxLast);
+  if (!fresh.length) return;
+  S.rxLast = Math.max(S.rxLast, ...fresh.map(x => x.id));
+  fresh.slice(-6).forEach((x, i) => setTimeout(() => { if (S.map) S.map.pop(x.emoji); else popNoMap($('#live-nomap'), x.emoji); }, i * 350));
+  const last = fresh[fresh.length - 1];
+  toast(fresh.length === 1 ? `${last.emoji} from ${last.name}` : `${fresh.map(x => x.emoji).join(' ')} from ${listNames([...new Set(fresh.map(x => x.name))])}`, 2600);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.7b — Trip postcard
+// Made on this phone when a share ends: your buddy, the route's outline with no map (the first and last
+// 200 m are cut so it never shows a front door), where you went and how far. Neerly doesn't keep it.
+// ─────────────────────────────────────────────────────────────────────────────
+const POSTCARD_TRIM_M = 200;
+function trimRoute(pts, m) {
+  if (pts.length < 2) return [];
+  const d = [0];
+  for (let i = 1; i < pts.length; i++) d.push(d[i - 1] + distM({ lat: pts[i - 1][0], lng: pts[i - 1][1] }, { lat: pts[i][0], lng: pts[i][1] }));
+  const total = d[d.length - 1];
+  if (total < m * 2 + 200) return [];
+  return pts.filter((_, i) => d[i] >= m && d[i] <= total - m);
+}
+function svgImage(svg) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img); img.onerror = reject;
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+async function makePostcard(trip) {
+  const W = 1080, H = 1350;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  try { await Promise.all(['800 72px Figtree', '600 40px Figtree', '700 34px Figtree'].map(f => document.fonts.load(f))); } catch {}
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#fff1e6'); bg.addColorStop(1, '#ffffff');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#f0e2d8'; g.lineWidth = 4; g.strokeRect(36, 36, W - 72, H - 72);
+  g.fillStyle = '#e85d26'; g.font = '800 44px Figtree, system-ui, sans-serif'; g.textBaseline = 'alphabetic';
+  g.fillText('Neerly', 88, 132);
+  const day = new Date(trip.startedAt || Date.now()).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  g.fillStyle = '#9a8a80'; g.font = '600 34px Figtree, system-ui, sans-serif'; g.textAlign = 'right'; g.fillText(day, W - 88, 132); g.textAlign = 'left';
+  // The route, fitted into the middle of the card (north up, no map).
+  const route = trimRoute(trip.trail || [], POSTCARD_TRIM_M);
+  const box = { x: 130, y: 200, w: W - 260, h: 740 };
+  const buddyImg = await svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 76 76" width="320" height="320" overflow="visible"><circle cx="32" cy="32" r="36" fill="#fff" stroke="#e85d26" stroke-width="4"/>${buddyInner(trip.buddy, trip.outfit)}</svg>`).catch(() => null);
+  let end = null;
+  if (route.length >= 2) {
+    const lat0 = route.reduce((s, p) => s + p[0], 0) / route.length * Math.PI / 180;
+    const xy = route.map(([la, ln]) => [ln * Math.cos(lat0), -la]);
+    const xs = xy.map(p => p[0]), ys = xy.map(p => p[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const s = Math.min(box.w / Math.max(maxX - minX, 1e-9), box.h / Math.max(maxY - minY, 1e-9));
+    const ox = box.x + (box.w - (maxX - minX) * s) / 2, oy = box.y + (box.h - (maxY - minY) * s) / 2;
+    const P = xy.map(([x, y]) => [ox + (x - minX) * s, oy + (y - minY) * s]);
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    g.strokeStyle = 'rgba(232,93,38,.18)'; g.lineWidth = 34; g.beginPath(); P.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
+    g.strokeStyle = '#e85d26'; g.lineWidth = 14; g.setLineDash(trip.trailStyle === 'dots' ? [0.1, 30] : []); g.beginPath(); P.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#fff'; g.strokeStyle = '#e85d26'; g.lineWidth = 8; g.beginPath(); g.arc(P[0][0], P[0][1], 16, 0, Math.PI * 2); g.fill(); g.stroke();
+    end = P[P.length - 1];
+  }
+  if (buddyImg) {
+    if (end) g.drawImage(buddyImg, end[0] - 90, end[1] - 90, 180, 180);
+    else g.drawImage(buddyImg, W / 2 - 170, box.y + 200, 340, 340);
+  }
+  // Where and how far.
+  const title = trip.note ? `To ${trip.note}` : 'On my way';
+  g.fillStyle = '#2a1a12'; g.font = '800 72px Figtree, system-ui, sans-serif';
+  let t = title;
+  if (g.measureText(t).width > W - 176) { while (t.length > 4 && g.measureText(t + '…').width > W - 176) t = t.slice(0, -1); t += '…'; }
+  g.fillText(t, 88, 1080);
+  const facts = [trip.distanceM > 30 ? fmtDist(trip.distanceM) : '', fmtMins(trip.minutes)].filter(Boolean).join(' · ');
+  g.fillStyle = '#6b5a50'; g.font = '600 44px Figtree, system-ui, sans-serif'; g.fillText(facts, 88, 1150);
+  g.fillStyle = '#9a8a80'; g.font = '600 32px Figtree, system-ui, sans-serif'; g.fillText('neerly.net · I’m on my way.', 88, H - 92);
+  return new Promise(res => cv.toBlob(res, 'image/png'));
+}
+let postcardUrl = null, postcardBlob = null;
+$('#btn-postcard').addEventListener('click', async () => {
+  const btn = $('#btn-postcard'); if (!S.lastTrip) return;
+  busy(btn, true, 'Drawing…');
+  try {
+    postcardBlob = await makePostcard(S.lastTrip);
+    if (postcardUrl) URL.revokeObjectURL(postcardUrl);
+    postcardUrl = URL.createObjectURL(postcardBlob);
+    $('#pc-img').src = postcardUrl;
+    const file = new File([postcardBlob], 'neerly-postcard.png', { type: 'image/png' });
+    $('#pc-share').classList.toggle('hidden', !(navigator.canShare && navigator.canShare({ files: [file] })));
+    $('#pc-save').href = postcardUrl;
+    $('#postcard').classList.add('on');
+  } catch { toast('Couldn’t draw the postcard'); }
+  finally { busy(btn, false); }
+});
+$('#pc-share').addEventListener('click', async () => {
+  try { await navigator.share({ files: [new File([postcardBlob], 'neerly-postcard.png', { type: 'image/png' })], title: 'Neerly' }); } catch {}
+});
+$('#pc-close').addEventListener('click', () => $('#postcard').classList.remove('on'));
+$('#postcard').addEventListener('click', (e) => { if (e.target.id === 'postcard') $('#postcard').classList.remove('on'); });
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Modal
 // ─────────────────────────────────────────────────────────────────────────────
 function modal(title, body, actions) {
@@ -2604,6 +3020,10 @@ document.addEventListener('visibilitychange', () => {
   S.session = store.get(SESSION_KEY);
   try { applyAppIcon(localStorage.getItem('neerly_icon')); } catch {}
   try { const sb = JSON.parse(sessionStorage.getItem('neerly_shareback') || 'null'); if (sb?.token) S.shareBack = sb; } catch {}
+  swReady(); // v0.7b: the service worker shows notifications (and opens Neerly when one is tapped)
+  // v0.7b: a quick start's link (from a Shortcut or a bookmark) fills in the share screen after sign-in.
+  const preset = p.get('preset');
+  if (preset) { try { sessionStorage.setItem('neerly_preset', preset); } catch {} cleanUrl(); }
 
   const share = p.get('share');
   if (share) return openRecipient(share, p.get('r'));
@@ -2628,7 +3048,7 @@ document.addEventListener('visibilitychange', () => {
   try {
     const me = await api('GET', '/neerly/me');
     setMe(me);
-    startBadgeTimer();
+    startBadgeTimer(); syncPush();
     if (me.activeShare) { S.share = me.activeShare; await goLive(); return thenWatching ? openWatching() : undefined; } // a live share keeps going on every tab
     if (!me.user.avatar) return openBuddyPicker();
     if (thenWatching) return openWatching();
