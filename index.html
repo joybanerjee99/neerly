@@ -8,14 +8,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Neerly">
 <meta name="description" content="Share your live location with the people you pick, for as long as you pick. It ends itself.">
-<meta property="og:title" content="Neerly — I'm on my way.">
-<meta property="og:description" content="Live location, for a little while. Tap to watch — no app needed.">
+<!-- v0.7b.1: the link preview (Messages, WhatsApp) says what this is and that it's safe to tap -->
+<meta property="og:title" content="A friend is sharing where they are · Neerly">
+<meta property="og:description" content="Opens in your browser. No app, no sign-up. It ends on its own.">
 <title>Neerly — I'm on my way.</title>
 <link rel="icon" type="image/svg+xml" href="neerly-assets/mark.svg" id="fav-svg">
 <link rel="icon" type="image/png" sizes="32x32" href="neerly-assets/favicon-32.png">
 <link rel="apple-touch-icon" href="neerly-assets/apple-touch-icon.png" id="touch-icon">
 <link rel="manifest" href="neerly-assets/manifest.webmanifest">
-<meta property="og:image" content="https://neerly.net/neerly-assets/og.png">
+<meta property="og:image" content="https://neerly.net/neerly-assets/og-share.png">
 <meta property="og:url" content="https://neerly.net/">
 <link rel="canonical" href="https://neerly.net/">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
@@ -371,6 +372,14 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .rx-float{position:absolute;left:50%;bottom:70%;font-size:30px;line-height:1;pointer-events:none;z-index:5;animation:rxfloat 2.2s ease-out forwards}
 @keyframes rxfloat{0%{transform:translate(-50%,0) scale(.6);opacity:0}15%{transform:translate(-50%,-14px) scale(1.15);opacity:1}100%{transform:translate(-30%,-90px) scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.rx-float{animation:none;opacity:1;transform:translate(-50%,-20px)}.rx-btns button.sent{animation:none}}
+.rx-float small{display:block;width:max-content;margin:2px auto 0;font-size:12px;font-weight:700;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:999px;padding:1px 7px;box-shadow:0 1px 3px rgba(80,40,20,.15)}
+.rx-mini{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-top:2px}
+.live-add{margin-bottom:12px}
+.live-add .contacts{margin-bottom:10px}
+.live-add form{display:flex;gap:8px;margin-bottom:10px}
+.live-add form .input{padding:10px 12px}
+.live-add form .btn{width:auto;min-height:0;padding:10px 16px;font-size:15px}
+.qs .chip{background:var(--accent-softer);border-color:var(--accent-soft);color:var(--accent-dark);font-weight:700}
 .rx-count{font-size:14px;letter-spacing:0;text-transform:none;color:var(--sub);font-weight:700;margin-left:6px}
 .sum-rx{margin-top:10px;font-size:18px;letter-spacing:.04em}
 .sum-rx:empty{display:none}
@@ -543,7 +552,14 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <button class="btn btn-ghost" id="btn-sharesheet">Send via…</button>
   </div>
 
-  <h2>Who's watching<span class="rx-count" id="live-rx"></span></h2>
+  <div class="section-head"><h2>Who's watching<span class="rx-count" id="live-rx"></span></h2><button id="btn-live-add">+ Add people</button></div>
+  <div class="card live-add hidden" id="live-add">
+    <p class="muted small" style="margin-bottom:10px">They’ll get the link too, for the rest of this share.</p>
+    <div class="contacts"><div id="live-add-list"></div></div>
+    <form id="f-live-add" novalidate><input class="input" name="who" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="Email or @username"><button class="btn btn-ghost" type="submit">Add</button></form>
+    <div class="err" id="live-add-err"></div>
+    <div class="row"><button class="btn btn-outline" id="btn-live-add-cancel">Cancel</button><button class="btn btn-primary" id="btn-live-add-go" disabled>Add</button></div>
+  </div>
   <div class="rlist" id="live-recipients"></div>
 
   <h2>Need longer?</h2>
@@ -1245,7 +1261,7 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
         setTrail(points) { if (!here) line.setPath(points.map(([a, b]) => ({ lat: a, lng: b }))); },
         setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; marker.setIcon(pinIcon()); },
         setBubble() {}, // Google Maps: the status stays in the header for now
-        pop(emoji) { const s = document.createElement('span'); s.className = 'rx-float'; s.textContent = emoji; s.style.bottom = '50%'; el.parentElement.appendChild(s); setTimeout(() => s.remove(), 2300); },
+        pop(emoji, name) { const s = rxFloat(emoji, name); s.style.bottom = '50%'; el.parentElement.appendChild(s); setTimeout(() => s.remove(), 2300); },
         destroy() { el.innerHTML = ''; },
       };
     } catch (e) { console.warn('Google Maps failed, falling back to OpenStreetMap', e); }
@@ -1282,9 +1298,9 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
     setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; pin.setIcon(pinIcon()); },
     setBubble(html) { html = html || ''; if (html === bubble) return; bubble = html; pin.setIcon(pinIcon()); },
     // v0.7b: a reaction floats up from the buddy.
-    pop(emoji) {
+    pop(emoji, name) {
       const host = placed && pin.getElement();
-      const s = document.createElement('span'); s.className = 'rx-float'; s.textContent = emoji;
+      const s = rxFloat(emoji, name);
       if (host) host.appendChild(s); else { s.style.bottom = '50%'; el.parentElement.appendChild(s); }
       setTimeout(() => s.remove(), 2300);
     },
@@ -2038,6 +2054,7 @@ async function goLive() {
   $('#live-banner').classList.remove('on');
   S.prevWatch = null; closeNoteEdit(); renderChimeSwitch();
   S.rxLast = S.share?.reactionsLastId ?? null; renderPush();
+  $('#live-add').classList.add('hidden');
   renderLive(); renderLiveNote();
   if (S.map) { S.map.destroy(); S.map = null; }
   const hasMap = shareHasMap(S.share);
@@ -2147,13 +2164,18 @@ function renderLive() {
   $('#live-cap').textContent = 'left — ' + cap;
 
   const label = { sent: '📬 Sent', watching: '👁 Watching', viewed: '✓ Viewed' };
+  // v0.7b.1: what each person reacted with, e.g. "❤️ 2 · 👋 1"
+  const rxLine = (c) => { const s = Object.entries(c || {}).map(([e, n]) => `${e} ${n}`).join(' · '); return s ? `<span class="rx-mini">${esc(s)}</span>` : ''; };
   let html = rs.map(r => `
     <div class="ritem">
       <span class="avatar">${esc(initials(r))}</span>
-      <span class="who"><b>${esc(displayName(r))}</b><span>${esc(!r.email.startsWith('@') ? r.email : r.nickname === r.email ? 'On Neerly · email private' : r.email + ' · on Neerly')}</span></span>
+      <span class="who"><b>${esc(displayName(r))}</b><span>${esc(!r.email.startsWith('@') ? r.email : r.nickname === r.email ? 'On Neerly · email private' : r.email + ' · on Neerly')}</span>${rxLine(r.reactions)}</span>
       <span class="status ${r.status}">${label[r.status]}</span>
     </div>`).join('');
-  if (linkW) html += `<div class="ritem"><span class="avatar">🔗</span><span class="who"><b>Via your link</b><span>Opened from a shared link</span></span><span class="status watching">👁 ${linkW} watching</span></div>`;
+  const others = sh.otherReactions || [];
+  const viaLink = others.find(o => o.name === 'Someone');
+  if (linkW || viaLink) html += `<div class="ritem"><span class="avatar">🔗</span><span class="who"><b>Via your link</b><span>Opened from a shared link</span>${rxLine(viaLink?.counts)}</span>${linkW ? `<span class="status watching">👁 ${linkW} watching</span>` : ''}</div>`;
+  for (const o of others) if (o !== viaLink) html += `<div class="ritem"><span class="avatar">${esc(initials({ nickname: o.name }))}</span><span class="who"><b>${esc(o.name)}</b><span>Watching from a link</span>${rxLine(o.counts)}</span></div>`;
   if (!html) html = '<div class="empty">Just you so far. Copy the link or send it with the buttons above.</div>';
   $('#live-recipients').innerHTML = html;
 
@@ -2175,13 +2197,67 @@ $$('#live-ext button').forEach(b => b.addEventListener('click', async () => {
   finally { busy(b, false); if (S.share) renderLive(); }
 }));
 
+// v0.7b.1 — add people to a share that's already running.
+S.liveAdd = new Set();
+function liveAddCandidates() {
+  const on = new Set((S.share?.recipients || []).map(r => r.email));
+  return S.contacts.filter(c => !(c.email ? on.has(c.email) : on.has('@' + c.username)));
+}
+function renderLiveAdd() {
+  const list = liveAddCandidates();
+  $('#live-add-list').innerHTML = list.length ? list.map(c => `
+    <div class="contact ${S.liveAdd.has(ckey(c)) ? 'on' : ''}" role="button" tabindex="0" data-key="${esc(ckey(c))}">
+      <span class="check"></span><span class="avatar">${esc(initials(c))}</span>
+      <span class="who"><b>${esc(displayName(c))}</b><span>${esc(c.email || 'On Neerly · email private')}</span></span></div>`).join('')
+    : '<div class="empty">Everyone you’ve saved is already on this share. Add someone new below.</div>';
+  const n = S.liveAdd.size, btn = $('#btn-live-add-go');
+  if (!btn.dataset.label) { btn.disabled = !n; btn.textContent = n ? `Add ${n === 1 ? '1 person' : n + ' people'}` : 'Add'; }
+}
+$('#btn-live-add').addEventListener('click', async () => {
+  const box = $('#live-add'); if (!box.classList.contains('hidden')) return box.classList.add('hidden');
+  S.liveAdd = new Set(); $('#live-add-err').classList.remove('on'); box.classList.remove('hidden'); renderLiveAdd();
+  try { S.contacts = (await api('GET', '/neerly/contacts')).contacts; renderLiveAdd(); } catch {}
+});
+$('#btn-live-add-cancel').addEventListener('click', () => $('#live-add').classList.add('hidden'));
+$('#live-add-list').addEventListener('click', (e) => {
+  const row = e.target.closest('.contact'); if (!row) return;
+  const k = row.dataset.key; S.liveAdd.has(k) ? S.liveAdd.delete(k) : S.liveAdd.add(k); renderLiveAdd();
+});
+$('#f-live-add').addEventListener('submit', async (e) => {
+  e.preventDefault(); const f = e.target, err = $('#live-add-err'); err.classList.remove('on');
+  const v = f.who.value.trim(); if (!v) return;
+  const byName = v.startsWith('@') || !v.includes('@');
+  const bad = byName ? !/^@?[a-z0-9._]{3,20}$/i.test(v) : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  if (bad) { err.textContent = 'Add an email, or a Neerly @username'; err.classList.add('on'); return; }
+  const btn = $('button', f); busy(btn, true);
+  try {
+    const d = await api('POST', '/neerly/contacts', byName ? { username: v.replace(/^@/, '') } : { email: v });
+    S.contacts = d.contacts; S.liveAdd.add(ckey(d.contact)); f.reset(); renderLiveAdd();
+  } catch (x) { err.textContent = x.message; err.classList.add('on'); }
+  finally { busy(btn, false); }
+});
+$('#btn-live-add-go').addEventListener('click', async () => {
+  const btn = $('#btn-live-add-go'), err = $('#live-add-err');
+  const picked = S.contacts.filter(c => S.liveAdd.has(ckey(c)));
+  if (!picked.length) return;
+  busy(btn, true);
+  try {
+    const d = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/recipients`, { recipients: picked.map(recipOf) });
+    S.share = d.share; applyLiveTrail(S.share); renderLive();
+    $('#live-add').classList.add('hidden');
+    toast(`Added ${listNames(picked.map(displayName))}. ${picked.length === 1 ? 'They’ll' : 'They’ll each'} get the link`, 3000);
+  } catch (x) { if (x.status === 410) { S.share = x.body?.share || S.share; endLive(); } else { err.textContent = x.message; err.classList.add('on'); } }
+  finally { busy(btn, false); renderLiveAdd(); }
+});
+
 $('#btn-copy').addEventListener('click', async () => { toast(await copyText(S.share.link) ? 'Link copied' : 'Couldn’t copy — try “Send via…”'); });
 $('#btn-sharesheet').addEventListener('click', async () => {
-  const name = S.session?.user?.name || 'I';
-  const sh = S.share, left = fmtClock(sh.expiresAt - serverNow());
+  // v0.7b.1: in the sender's own voice, saying what happens when you tap (people hesitate at unknown links).
+  const sh = S.share, left = fmtMins((sh.expiresAt - serverNow()) / 60000);
+  const safe = 'No app needed, and it ends on its own.';
   const text = sh.mode === 'now'
-    ? (sh.note ? `${name}: ${sh.note} — live for the next ${left}:` : `Here's where ${name === 'I' ? 'I am' : name + ' is'} for the next ${left}:`)
-    : `${name} is on the way${sh.note ? ' to ' + sh.note : ''} — watch live for the next ${left}:`;
+    ? (sh.note ? `${sh.note} — tap to see ${sh.showLocation ? 'where I am' : 'my status'}, live for the next ${left}. ${safe}` : `Here’s where I am right now 🧡 Tap to see me on the map, live for the next ${left}. ${safe}`)
+    : `I’m on the way${sh.note ? ' to ' + sh.note : ''} 🧡 Tap to watch me on the map, live for the next ${left}. ${safe}`;
   if (navigator.share) { try { await navigator.share({ title: 'Neerly', text, url: S.share.link }); } catch {} }
   else toast(await copyText(`${text} ${S.share.link}`) ? 'Message and link copied' : 'Couldn’t copy the link');
 });
@@ -2302,7 +2378,7 @@ $('#rx-back').addEventListener('click', (e) => { e.preventDefault(); openWatchin
 function startBadgeTimer() {
   if (S.badgeTimer || !S.session?.token) return;
   checkWatchCount();
-  S.badgeTimer = setInterval(checkWatchCount, 60000);
+  S.badgeTimer = setInterval(checkWatchCount, 20000); // v0.7b.1: every 20 s (was a minute)
 }
 async function checkWatchCount() {
   if (!S.session?.user?.emailVerified || currentScreen === 'watching') return;
@@ -2703,7 +2779,7 @@ async function pushState() {
 async function enablePush() {
   if (!pushSupported()) return false;
   const perm = await Notification.requestPermission();
-  if (perm !== 'granted') { toast(perm === 'denied' ? 'Notifications are blocked. Turn them on in your browser’s site settings.' : 'No problem. You can turn them on later in your profile.', 3800); return false; }
+  if (perm !== 'granted') { toast(perm === 'denied' ? 'Notifications are blocked. Turn them on in your browser’s site settings. Private (Incognito) windows can’t show them.' : 'No problem. You can turn them on later in your profile.', 4500); return false; }
   try {
     const reg = await swReady(); if (!reg) throw new Error('This browser can’t show notifications.');
     const { key } = await api('GET', '/neerly/push/key');
@@ -2740,7 +2816,7 @@ async function renderPush() {
   $('#push-text').textContent = {
     on: 'You’ll get a buzz when someone starts watching, reacts, shares with you or asks where you are, even with your phone locked.',
     off: 'Get a buzz when someone starts watching, reacts, shares with you or asks where you are, even with your phone locked.',
-    denied: 'Notifications are blocked for Neerly. Turn them on in your browser’s site settings, then come back here.',
+    denied: 'Notifications are blocked for Neerly. Turn them on in your browser’s site settings, then come back here. In a private (Incognito) window they can’t be turned on: use a normal window.',
     'ios-home': 'On iPhone, notifications work once Neerly is on your Home Screen. Three taps in Safari:',
     unsupported: 'This browser can’t show notifications. Neerly will still email you.',
   }[st];
@@ -2830,7 +2906,7 @@ function currentSetup() {
 $('#btn-qs-save').addEventListener('click', () => {
   const f = $('#f-qs'); showErr(f, '');
   const x = currentSetup();
-  f.name.value = x.note ? x.note.replace(/^\p{Extended_Pictographic}\s*/u, '').slice(0, 30) : '';
+  f.name.value = ''; // v0.7b.1: no suggestion. "At the gym" from the status made two look-alike buttons
   $('#qs-save-what').textContent = shareDesc(x);
   f.classList.remove('hidden'); $('#btn-qs-save').classList.add('hidden'); f.name.focus();
 });
@@ -2879,10 +2955,16 @@ $('#r-rx-btns').addEventListener('click', async (e) => {
     toast(`Sent ${emoji} to ${R.share.senderName}`, 1600);
   } catch (err) { toast(err.message); }
 });
+// v0.7b.1: the floating emoji carries the name of whoever sent it (on the sender's screen).
+function rxFloat(emoji, name) {
+  const s = document.createElement('span'); s.className = 'rx-float';
+  s.innerHTML = esc(emoji) + (name ? `<small>${esc(name)}</small>` : '');
+  return s;
+}
 // No map (Right now without a location): the emoji floats up from the big buddy instead.
-function popNoMap(card, emoji) {
+function popNoMap(card, emoji, name) {
   const b = card && $('.buddy', card); if (!b) return;
-  const s = document.createElement('span'); s.className = 'rx-float'; s.textContent = emoji;
+  const s = rxFloat(emoji, name);
   b.style.position = 'relative'; b.appendChild(s); setTimeout(() => s.remove(), 2300);
 }
 function showReactions(sh) {
@@ -2893,7 +2975,7 @@ function showReactions(sh) {
   const fresh = (sh.reactions || []).filter(x => x.id > S.rxLast);
   if (!fresh.length) return;
   S.rxLast = Math.max(S.rxLast, ...fresh.map(x => x.id));
-  fresh.slice(-6).forEach((x, i) => setTimeout(() => { if (S.map) S.map.pop(x.emoji); else popNoMap($('#live-nomap'), x.emoji); }, i * 350));
+  fresh.slice(-6).forEach((x, i) => setTimeout(() => { if (S.map) S.map.pop(x.emoji, x.name); else popNoMap($('#live-nomap'), x.emoji, x.name); }, i * 350));
   const last = fresh[fresh.length - 1];
   toast(fresh.length === 1 ? `${last.emoji} from ${last.name}` : `${fresh.map(x => x.emoji).join(' ')} from ${listNames([...new Set(fresh.map(x => x.name))])}`, 2600);
 }
@@ -3010,7 +3092,15 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   if ($('#s-live').classList.contains('on')) { requestWakeLock(); syncLive(); }
   if ($('#s-rlive').classList.contains('on')) pollRecipient().catch(() => {});
+  freshen(); // v0.7b.1: back in the app, so the Watching badge is right straight away
 });
+// v0.7b.1: a notification arrived while Neerly is open (the service worker tells the page). Refresh what it's about.
+function freshen() {
+  if (!S.session?.token) return;
+  if (currentScreen === 'watching') pollWatching(); else checkWatchCount();
+  if (S.share?.active) syncLive();
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', (e) => { if (e.data?.type === 'push') freshen(); });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Boot
