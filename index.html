@@ -384,6 +384,42 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .sum-rx{margin-top:10px;font-size:18px;letter-spacing:.04em}
 .sum-rx:empty{display:none}
 .pc-img{display:block;width:100%;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow)}
+/* v0.8 — destinations, ETA, late check, Activity */
+.dest-row{margin-top:12px}
+.dest-btn{min-height:46px;padding:10px 16px;font-size:15px}
+.dest-set{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--accent-soft);border-radius:14px;padding:10px 12px;cursor:pointer}
+.dest-set #dest-set-text{flex:1;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.dest-set .x,.place-chip .x{flex:none;width:28px;height:28px;border-radius:50%;color:var(--muted);font-size:18px;line-height:1}
+#dest-places{margin-top:8px}
+.late-opts{background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px 12px;margin-top:8px}
+.dpin{width:40px;height:40px;display:grid;place-items:start;font-size:30px;line-height:1;filter:drop-shadow(0 2px 3px rgba(80,40,20,.35))}
+.dest-sheetbox{max-height:calc(100vh - 32px);overflow:auto}
+.dest-map{height:min(48vh,380px);margin-top:10px}
+.place-chip{display:inline-flex;align-items:center;gap:2px;padding-right:4px;cursor:pointer}
+.savechk{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--sub);margin:-2px 0 14px}
+.savechk input{width:20px;height:20px;accent-color:var(--accent)}
+.live-eta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--green-soft);color:#1f6e4a;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-weight:600}
+.live-eta .eta-main{flex:1;min-width:0}
+.live-eta .eta-main b{display:block;font-size:20px;font-weight:800}
+.live-eta .eta-main span{display:block;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.live-eta .link{padding:2px 0;font-size:14px}
+.live-eta .eta-acts{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.eta-form{display:flex;align-items:center;flex-wrap:wrap;gap:8px;background:#fff;border:1.5px solid var(--accent-soft);border-radius:14px;padding:10px 12px;margin:-4px 0 12px;font-weight:600;color:var(--sub)}
+.eta-form .input{width:84px;padding:9px 10px;text-align:center}
+.eta-form .btn{width:auto;min-height:0;padding:9px 16px;font-size:15px}
+#live-late{margin:-4px 0 12px}
+.late-box{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 12px;font-size:14px;color:var(--sub)}
+.late-box.warn{background:#fff4e0;border-color:#ffd9a0;color:#7a4f00}
+.late-acts{display:flex;gap:8px}
+.late-acts .chip{font-size:13px;padding:6px 11px}
+.arow{display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 14px;border-bottom:1px solid var(--border);text-align:left}
+.arow:last-child{border-bottom:none}
+.arow .aicon{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent-softer);display:grid;place-items:center;font-size:20px}
+.arow .who b{white-space:normal}
+.arow .who span{white-space:normal}
+.arow .atime{font-size:12px;color:var(--muted);margin-top:2px}
+.arow.unread{background:var(--accent-softer)}
+.tabbar .in{grid-template-columns:repeat(4,1fr)}
 </style>
 </head>
 <body>
@@ -474,6 +510,20 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <div class="note-wrap"><input class="input" id="note-input" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Grandma’s, the office, Blue Bottle…"><button type="button" class="clear hidden" id="note-clear" aria-label="Clear">×</button></div>
   </label>
   <div class="chips status hidden" id="status-chips"></div>
+  <div class="dest-row hidden" id="dest-row">
+    <button type="button" class="btn btn-outline dest-btn" id="btn-dest">📍 Drop a pin where you’re going</button>
+    <div class="dest-set hidden" id="dest-set" role="button" tabindex="0"><span id="dest-set-text"></span><span class="muted small">Change</span><button type="button" class="x" id="dest-clear" aria-label="Remove the destination">×</button></div>
+    <div class="chips" id="dest-places"></div>
+  </div>
+  <div class="switch-row hidden" id="late-row" role="switch" aria-checked="false" tabindex="0">
+    <div class="txt"><b>⏰ Let them know if I’m late</b><span class="sub">A gentle nudge to your watchers if you haven’t arrived</span></div>
+    <span class="switch" id="late-switch"></span>
+  </div>
+  <div class="late-opts hidden" id="late-opts">
+    <p class="look-label">I should be there within</p><div class="chips" id="late-by"></div>
+    <p class="look-label">Then wait</p><div class="chips" id="late-grace"></div>
+    <p class="muted small" id="late-sub" style="margin-top:10px"></p>
+  </div>
   <div class="switch-row hidden" id="loc-row" role="switch" aria-checked="true" tabindex="0">
     <div class="txt"><b>Show where I am</b><span class="sub" id="loc-sub">A pin on the map, no trail</span></div>
     <span class="switch on" id="loc-switch"></span>
@@ -533,6 +583,15 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <button class="link" id="btn-note-edit">Edit</button>
     <form id="f-note" class="hidden" novalidate><input class="input" name="note" maxlength="60" autocomplete="off" enterkeyhint="done"><button class="btn btn-primary" type="submit">Save</button></form>
   </div>
+  <div class="live-eta hidden" id="live-eta"></div>
+  <form class="eta-form hidden" id="f-eta" novalidate>
+    <span>I’ll be there in</span><input class="input" name="min" type="number" inputmode="numeric" min="1" max="600" placeholder="18" aria-label="Minutes"><span>min</span>
+    <button class="btn btn-primary" type="submit">Save</button>
+    <button type="button" class="link small hidden" id="btn-eta-auto">Use automatic</button>
+    <button type="button" class="link small link-muted" id="btn-eta-cancel">Cancel</button>
+  </form>
+  <p class="hidden" id="btn-dest-live-wrap" style="margin:-4px 0 12px"><button type="button" class="link small" id="btn-dest-live">📍 Add where you’re going</button> <button type="button" class="link small" id="btn-eta-set">⏱ Set your ETA</button></p>
+  <div class="hidden" id="live-late"></div>
   <div id="live-mapbox">
     <div class="map-wrap"><div class="map" id="live-map"></div><button class="recenter" id="live-recenter">Recenter</button></div>
     <div class="map-foot"><span id="live-updated">Finding you…</span><span id="live-dist">Keep this screen open</span></div>
@@ -576,7 +635,7 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div></div>
   <div class="card sumcard">
     <span class="buddy ring" id="sum-buddy"></span>
-    <h1>Your share has ended</h1>
+    <h1 id="ended-title">Your share has ended</h1>
     <p class="lead" id="ended-sub">Your location isn't being shared anymore — and it isn't kept.</p>
     <div class="sumrow" id="sum-row">
       <div><b id="sum-time">–</b><span>shared</span></div>
@@ -739,6 +798,14 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   <div class="tip hidden" id="w-tip"><div style="flex:1"><b>Tip: put Neerly on your Home Screen</b> so checking on friends is one tap.<ol class="ios-steps" id="w-tip-steps"></ol></div><button class="x" id="w-tip-x" aria-label="Dismiss">×</button></div>
 </section>
 
+<!-- ═════════════ ACTIVITY (v0.8) ═════════════ -->
+<section class="screen" id="s-activity">
+  <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div><button class="link hidden" id="btn-act-clear">Clear all</button></div>
+  <h1>Activity</h1>
+  <p class="lead">Your notifications from the last 7 days.</p>
+  <div class="flist" id="act-list"></div>
+</section>
+
 <!-- ═════════════ RECIPIENT EXPIRED ═════════════ -->
 <section class="screen" id="s-rexpired">
   <div class="topbar"><div class="brand"><span class="dot"></span>Neerly</div><a href="#" class="link hidden" id="rx-back">← Watching</a><span class="pill grey">Ended</span></div>
@@ -813,10 +880,23 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     </div>
   </div>
 </div>
+<div class="scrim" id="dest-sheet">
+  <div class="sheet dest-sheetbox">
+    <h1 style="font-size:22px">Where are you going?</h1>
+    <p class="muted small" id="dest-hint" style="margin-top:4px"></p>
+    <div class="map dest-map" id="dest-map"></div>
+    <div id="dest-sheet-places-wrap" class="hidden"><p class="look-label">Your places</p><div class="chips" id="dest-sheet-places"></div></div>
+    <label class="field" style="margin-top:14px"><span>Name it <span class="muted" style="display:inline;font-weight:400">(what your watchers see)</span></span><input class="input" id="dest-name" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Starbucks, Macy’s, Grandma’s…"></label>
+    <label class="savechk"><input type="checkbox" id="dest-save"> Save to my places (kept on this phone)</label>
+    <div class="err" id="dest-err"></div>
+    <div class="row"><button type="button" class="btn btn-outline" id="dest-cancel">Cancel</button><button type="button" class="btn btn-primary" id="dest-use" disabled>Use this place</button></div>
+  </div>
+</div>
 <nav class="tabbar" id="tabbar" aria-label="Neerly">
   <div class="in">
     <button type="button" data-tab="share"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span class="live-dot"></span>Share</button>
     <button type="button" data-tab="watching"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4.2 1.6 4.7 4.5"/></svg><span class="tbadge" id="tab-badge"></span>Watching</button>
+    <button type="button" data-tab="activity"><svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg><span class="tbadge" id="act-badge"></span>Activity</button>
     <button type="button" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.9-3.8 3.9-6 7.5-6s6.6 2.2 7.5 6"/></svg>Profile</button>
   </div>
 </nav>
@@ -882,6 +962,9 @@ const S = {
   presets: [], qsEditing: false, qsApplied: null,
   rxLast: null,           // the newest reaction already shown on the live screen
   lastTrip: null,         // the share that just ended, for the postcard (kept in memory only)
+  // v0.8
+  dest: null,             // the share screen's destination: { lat, lng, name }
+  late: null,             // "Let them know if I'm late": { byMin, graceMin }
 };
 const serverNow = () => Date.now() + S.offset;
 
@@ -901,7 +984,7 @@ function clearTimers() { S.timers.forEach(clearInterval); S.timers = []; }
 function every(ms, fn) { S.timers.push(setInterval(fn, ms)); }
 
 // v0.7a — the tab bar shows on the main signed-in screens (and on a share opened from Watching).
-var TAB_OF = { share: 'share', live: 'share', ended: 'share', watching: 'watching', profile: 'profile', rlive: 'watching', rexpired: 'watching' };
+var TAB_OF = { share: 'share', live: 'share', ended: 'share', watching: 'watching', activity: 'activity', profile: 'profile', rlive: 'watching', rexpired: 'watching' };
 var currentScreen = null;
 function show(id) {
   clearTimers();
@@ -920,6 +1003,7 @@ function updateTabs() {
   $$('#tabbar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === TAB_OF[id]));
   $('#tabbar [data-tab=share]').classList.toggle('sharing', !!S.share?.active);
   $('#tab-badge').textContent = S.watchCount ? String(S.watchCount) : '';
+  $('#act-badge').textContent = S.inboxUnread ? String(S.inboxUnread) : '';
   $('#r-back').classList.toggle('hidden', !fromWatch);
   $('#rx-back').classList.toggle('hidden', !fromWatch);
 }
@@ -1262,12 +1346,13 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
         setWeather(next) { if (JSON.stringify(next || null) === JSON.stringify(wx)) return; wx = next || null; marker.setIcon(pinIcon()); },
         setBubble() {}, // Google Maps: the status stays in the header for now
         pop(emoji, name) { const s = rxFloat(emoji, name); s.style.bottom = '50%'; el.parentElement.appendChild(s); setTimeout(() => s.remove(), 2300); },
+        setDest() {}, // Google Maps: no destination flag yet
         destroy() { el.innerHTML = ''; },
       };
     } catch (e) { console.warn('Google Maps failed, falling back to OpenStreetMap', e); }
   }
 
-  if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. Location updates still work.</div>'; return { set() {}, setTrail() {}, setWeather() {}, setBubble() {}, pop() {}, destroy() {} }; }
+  if (!window.L) { el.innerHTML = '<div class="empty">Map couldn’t load. Location updates still work.</div>'; return { set() {}, setTrail() {}, setWeather() {}, setBubble() {}, pop() {}, setDest() {}, destroy() {} }; }
   if (el._leaflet_id) { el._leaflet_id = null; el.innerHTML = ''; } // v0.7a fix: never "Map container is already initialized"
   const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
   map.attributionControl.setPrefix(false); // drop Leaflet's own link + flag; the OpenStreetMap credit (required by its licence) stays
@@ -1276,7 +1361,7 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
   const trail = here ? null : makeTrailLayer(map, trailStyle).addTo(map);
   const pinIcon = () => L.divIcon({ className: 'bpin-wrap', html: `${here && bubble ? `<div class="map-bubble">${bubble}</div>` : ''}<div class="bpin${here ? ' here' : ''}">${buddySvg(buddyId, outfit, wx)}</div>`, iconSize: [48, 48], iconAnchor: [24, 24] });
   const pin = L.marker([0, 0], { icon: pinIcon(), keyboard: false, zIndexOffset: 1000 });
-  let placed = false, walkT;
+  let placed = false, walkT, destMarker = null, destKey = '';
   map.on('dragstart', () => setFollow(false));
   if (recenterBtn) recenterBtn.onclick = () => { setFollow(true); if (last) map.panTo([last.lat, last.lng]); };
   setTimeout(() => map.invalidateSize(), 50);
@@ -1286,8 +1371,9 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
       const walking = placed && !here && moved(last, next);
       last = next;
       pin.setLatLng([lat, lng]); circle.setLatLng([lat, lng]).setRadius(acc || 1);
-      if (!placed) { circle.addTo(map); pin.addTo(map); map.setView([lat, lng], 16); placed = true; }
-      else if (follow) map.panTo([lat, lng]);
+      const both = () => map.fitBounds(L.latLngBounds([[lat, lng], destMarker.getLatLng()]), { padding: [50, 50], maxZoom: 17, animate: false });
+      if (!placed) { circle.addTo(map); pin.addTo(map); if (destMarker) both(); else map.setView([lat, lng], 16); placed = true; }
+      else if (follow) { if (destMarker) both(); else map.panTo([lat, lng]); } // v0.8: with a destination, keep both in view
       if (!acc) circle.setStyle({ opacity: 0, fillOpacity: 0 }); else circle.setStyle({ opacity: .35, fillOpacity: .12 });
       if (walking) {  // little waddle when the buddy moves
         const b = pin.getElement()?.querySelector('.bpin');
@@ -1303,6 +1389,16 @@ async function createMap(el, recenterBtn, buddyId, look = {}) {
       const s = rxFloat(emoji, name);
       if (host) host.appendChild(s); else { s.style.bottom = '50%'; el.parentElement.appendChild(s); }
       setTimeout(() => s.remove(), 2300);
+    },
+    // v0.8: the destination, as a flag. The first time it appears, the map shows both the buddy and the flag.
+    setDest(d) {
+      const k = d ? `${d.lat},${d.lng}` : '';
+      if (k === destKey) return;
+      destKey = k;
+      if (!d) { if (destMarker) { destMarker.remove(); destMarker = null; } return; }
+      if (!destMarker) destMarker = L.marker([d.lat, d.lng], { icon: L.divIcon({ className: 'bpin-wrap', html: FLAG_HTML, iconSize: [40, 40], iconAnchor: [8, 38] }), keyboard: false, interactive: false, zIndexOffset: 400 }).addTo(map);
+      else destMarker.setLatLng([d.lat, d.lng]);
+      if (last && follow) map.fitBounds(L.latLngBounds([[last.lat, last.lng], [d.lat, d.lng]]), { padding: [50, 50], maxZoom: 17, animate: false });
     },
     destroy() { map.remove(); },
   };
@@ -1748,6 +1844,7 @@ async function openShare() {
   renderShareBack();
   show('share');
   S.editing = false; S.qsEditing = false; S.qsApplied = null; $('#qs-ready').classList.add('hidden');
+  if (!S.dest) S.late = null; renderDestRow();
   $('#f-qs').classList.add('hidden'); $('#btn-qs-save').classList.remove('hidden');
   renderContacts(); updateShareHint(); renderPresets();
   try {
@@ -1783,6 +1880,7 @@ function setMode(mode) {
   $('#status-chips').classList.toggle('hidden', !now);
   $('#loc-row').classList.toggle('hidden', !now);
   renderChips(); renderLocSwitch(); renderDurations(); renderShareBack();
+  if (v08Ready) renderDestRow(); // the first call (at start-up) comes before the v0.8 code below is set up
 }
 $('#modes').addEventListener('click', (e) => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== S.mode) setMode(b.dataset.mode); });
 function renderChips() {
@@ -1947,6 +2045,7 @@ $('#btn-share').addEventListener('click', async () => {
     const setup = sb ? null : currentSetup();
     const d = await api('POST', '/neerly/shares', { minutes: S.minutes, recipients, lat: pos?.lat, lng: pos?.lng, accuracy: pos?.accuracy,
       mode, note, showLocation: withLoc,
+      dest: mode === 'way' && S.dest ? S.dest : undefined, late: mode === 'way' && S.dest && S.late ? S.late : undefined, // v0.8
       tzOffset: new Date().getTimezoneOffset(), shareBack: sb ? sb.token : undefined });
     if (sb) setShareBack(null);
     if (d.newBadges?.length) setTimeout(() => toast(`🏅 New badge: ${d.newBadges.map(id => BADGE_INFO[id]?.name || id).join(', ')}`, 3500), 2800);
@@ -1957,6 +2056,7 @@ $('#btn-share').addEventListener('click', async () => {
     if (recipients.length) store.set(lastPicksKey(), pickedC.map(ckey));
     if (setup) store.set(lastShareKey(), setup); // v0.7b: "↺ Repeat last" next time
     S.selected.clear(); S.qsApplied = null; $('#qs-ready').classList.add('hidden');
+    S.dest = null; S.late = null; renderDestRow();
     goLive();
   } catch (err) {
     errEl.textContent = err.message; errEl.classList.add('on');
@@ -2025,6 +2125,7 @@ function renderLiveNote() {
   $('#live-note-text').textContent = sh.note || (now ? 'Just where you are' : 'Add where you’re going');
   $('#live-note-text').classList.toggle('muted', !sh.note);
   $('#btn-note-edit').textContent = sh.note ? 'Edit' : 'Add';
+  renderLiveDest(); // v0.8
   const hasMap = shareHasMap(sh);
   $('#live-mapbox').classList.toggle('hidden', !hasMap);
   $('#live-nomap').classList.toggle('hidden', hasMap);
@@ -2108,7 +2209,7 @@ async function syncLive() {
     const tok = encodeURIComponent(S.share.token);
     if (S.fix && S.fix.ts > S.pushedFixTs && shareHasMap(S.share)) {
       const fix = S.fix;
-      d = await api('POST', `/neerly/shares/${tok}/location`, { lat: fix.lat, lng: fix.lng, accuracy: fix.accuracy, trailFrom: S.trail.length, rxFrom: S.rxLast ?? undefined });
+      d = await api('POST', `/neerly/shares/${tok}/location`, { lat: fix.lat, lng: fix.lng, accuracy: fix.accuracy, trailFrom: S.trail.length, rxFrom: S.rxLast ?? undefined, battery: batteryLevel ?? undefined });
       S.pushedFixTs = fix.ts;
     } else {
       d = await api('GET', `/neerly/shares/${tok}/status?t=${S.trail.length}${S.rxLast != null ? '&rx=' + S.rxLast : ''}`);
@@ -2147,6 +2248,7 @@ function tickLive() {
 
 function renderLive() {
   const sh = S.share; if (!sh) return;
+  renderLiveDest(); // v0.8: ETA and the late check change with each update
   if (S.map) S.map.setBubble(statusBubble(sh));
   const rs = sh.recipients || [];
   const watching = rs.filter(r => r.status === 'watching').map(displayName);
@@ -2286,6 +2388,8 @@ function endLive(stopped) {
   const what = was.mode === 'now' ? (shareHasMap(was) ? 'Your status and spot aren’t being shared anymore, and nothing is kept.' : 'Your status isn’t being shared anymore.')
     : 'Your location isn’t being shared anymore, and your route isn’t kept.';
   $('#ended-sub').textContent = (stopped ? 'You stopped sharing. ' : 'Time’s up. ') + what;
+  $('#ended-title').textContent = was.arrivedAt ? 'You’ve arrived 🎉' : 'Your share has ended';
+  if (was.arrivedAt) $('#ended-sub').textContent = `You reached ${was.note || 'your pin'}, so your share ended on its own. Your route isn’t kept.`;
   S.prevWatch = null; S.trail = []; S.rxLast = null;
   renderSummary(S.share?.summary, S.share);
   S.share = null;
@@ -2369,6 +2473,7 @@ $('#tabbar').addEventListener('click', (e) => {
   const tab = b.dataset.tab;
   if (tab === 'share') openShareTab();
   else if (tab === 'watching') openWatching();
+  else if (tab === 'activity') openActivity();
   else openProfile();
 });
 $('#r-back').addEventListener('click', (e) => { e.preventDefault(); openWatching(); });
@@ -2377,8 +2482,8 @@ $('#rx-back').addEventListener('click', (e) => { e.preventDefault(); openWatchin
 // The tab badge: how many live shares are waiting for me. Checked quietly every minute.
 function startBadgeTimer() {
   if (S.badgeTimer || !S.session?.token) return;
-  checkWatchCount();
-  S.badgeTimer = setInterval(checkWatchCount, 20000); // v0.7b.1: every 20 s (was a minute)
+  checkWatchCount(); checkInbox();
+  S.badgeTimer = setInterval(() => { checkWatchCount(); checkInbox(); }, 20000); // v0.7b.1: every 20 s; v0.8: + Activity
 }
 async function checkWatchCount() {
   if (!S.session?.user?.emailVerified || currentScreen === 'watching') return;
@@ -2429,7 +2534,8 @@ async function pollWatching(first) {
 
 function friendLine(f) {
   if (f.mode === 'now') return f.note || (f.showLocation ? 'Here right now' : 'Right now');
-  return f.note ? `On the way to ${f.note}` : 'On the way';
+  const base = f.note ? `On the way to ${f.note}` : 'On the way';
+  return f.eta?.seconds != null ? `${base} · ${f.eta.seconds < 60 ? 'under a minute' : '~' + fmtMins(f.eta.seconds / 60)}` : base; // v0.8
 }
 function friendTime(f) {
   const left = f.expiresAt - serverNow();
@@ -2639,7 +2745,9 @@ function renderRecipLive() {
   const till = tillClock(sh.expiresAt);
   let sub = '';
   if (R.map) R.map.setBubble(statusBubble(sh)); // v0.6.1: the status is a speech bubble on the map
+  if (sh.eta) sub += ` <span class="wx" id="r-eta">⏱ ${esc(etaText(sh.eta))}</span>`; // v0.8
   if (sh.weather) sub += ' ' + wxChip(sh.weather);
+  if (R.map) R.map.setDest(sh.dest || null);
   $('#r-sub').innerHTML = sub.trim();
   if (!shareHasMap(sh)) {
     paintBuddy($('#r-nm-buddy'), sh.senderAvatar, sh.senderOutfit, sh.weather);
@@ -2675,7 +2783,9 @@ function showRecipExpired() {
   R.trail = [];
   $('#rx-emoji').innerHTML = R.share?.senderAvatar ? `<span class="buddy" style="width:88px;height:88px;background:var(--accent-softer)">${buddySvg(R.share.senderAvatar, R.share.senderOutfit)}</span>` : '👋';
   $('#rx-sub').textContent = ''; // just the headline and the buttons
-  $('#rx-title').innerHTML = R.share?.mode === 'now' && !R.share?.showLocation
+  $('#rx-title').innerHTML = R.share?.arrivedAt
+    ? `${esc(R.share.senderName)} arrived${R.share.note ? ' at ' + esc(R.share.note) : ''} 🎉`
+    : R.share?.mode === 'now' && !R.share?.showLocation
     ? `${esc(R.share.senderName)}’s update has ended`
     : `${esc(R.share?.senderName || '')} is no longer sharing their location`;
   $('#rx-actions').classList.remove('hidden');
@@ -3069,6 +3179,259 @@ $('#pc-share').addEventListener('click', async () => {
 $('#pc-close').addEventListener('click', () => $('#postcard').classList.remove('on'));
 $('#postcard').addEventListener('click', (e) => { if (e.target.id === 'postcard') $('#postcard').classList.remove('on'); });
 
+var v08Ready = false;
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.8 — Destinations: drop a pin (or pick a saved place) and give it a name. Saved places stay on this phone.
+// ─────────────────────────────────────────────────────────────────────────────
+const placesKey = () => 'neerly_places_' + (S.session?.user?.email || '');
+const PLACES_MAX = 12;
+const getPlaces = () => (store.get(placesKey()) || []).filter(p => p && Number.isFinite(p.lat) && Number.isFinite(p.lng) && p.name);
+function savePlace(pl) {
+  const list = getPlaces().filter(p => p.name.toLowerCase() !== pl.name.toLowerCase());
+  list.unshift({ name: pl.name, lat: pl.lat, lng: pl.lng });
+  store.set(placesKey(), list.slice(0, PLACES_MAX));
+}
+function removePlace(name) { store.set(placesKey(), getPlaces().filter(p => p.name !== name)); }
+const LATE_BY_CHIPS = [15, 30, 45, 60, 90];
+const LATE_GRACE_CHIPS = [5, 10, 15, 30];
+// ETA line, e.g. "~7 min · 1.2 km away" (or just the distance while standing still).
+function etaText(eta) {
+  if (!eta) return '';
+  const far = eta.distanceM != null ? `${fmtDist(eta.distanceM)} away` : '';
+  if (eta.seconds == null) return far;
+  const time = eta.seconds <= 0 && eta.manual ? 'any minute now' : eta.seconds < 60 ? 'under a minute' : '~' + fmtMins(eta.seconds / 60);
+  return far ? `${time} · ${far}` : time;
+}
+
+// The share screen's destination row (On my way only).
+function renderDestRow() {
+  const way = S.mode === 'way', d = S.dest, places = getPlaces();
+  $('#dest-row').classList.toggle('hidden', !way);
+  $('#dest-set').classList.toggle('hidden', !d);
+  $('#btn-dest').classList.toggle('hidden', !!d);
+  if (d) $('#dest-set-text').textContent = d.name ? `📍 ${d.name}` : '📍 Pin dropped';
+  $('#dest-places').innerHTML = !d && places.length ? places.map(p => `<button type="button" class="chip" data-place="${esc(p.name)}">📍 ${esc(p.name)}</button>`).join('') : '';
+  $('#late-row').classList.toggle('hidden', !(way && d));
+  $('#late-switch').classList.toggle('on', !!S.late);
+  $('#late-row').setAttribute('aria-checked', !!S.late);
+  $('#late-opts').classList.toggle('hidden', !(way && d && S.late));
+  if (S.late) {
+    $('#late-by').innerHTML = LATE_BY_CHIPS.map(m => `<button type="button" class="chip ${S.late.byMin === m ? 'on' : ''}" data-by="${m}">${fmtMins(m)}</button>`).join('');
+    $('#late-grace').innerHTML = LATE_GRACE_CHIPS.map(m => `<button type="button" class="chip ${S.late.graceMin === m ? 'on' : ''}" data-grace="${m}">${m} min</button>`).join('');
+    $('#late-sub').textContent = `If you haven’t arrived ${fmtMins(S.late.byMin)} from now, you get a heads-up. ${S.late.graceMin} min later, your watchers get a gentle nudge.`;
+  }
+}
+function setDest(d) {
+  S.dest = d;
+  if (d?.name && !$('#note-input').value.trim()) { $('#note-input').value = d.name; renderChips(); }
+  if (!d) S.late = null;
+  renderDestRow(); updateShareHint();
+}
+$('#btn-dest').addEventListener('click', () => openDestPicker(S.dest, (d) => setDest(d)));
+$('#dest-set').addEventListener('click', (e) => {
+  if (e.target.closest('#dest-clear')) { setDest(null); return; }
+  openDestPicker(S.dest, (d) => setDest(d));
+});
+$('#dest-places').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-place]'); if (!b) return;
+  const p = getPlaces().find(x => x.name === b.dataset.place); if (p) { $('#note-input').value = p.name; renderChips(); setDest({ ...p }); }
+});
+function toggleLateSetting() { S.late = S.late ? null : { byMin: 30, graceMin: 10 }; renderDestRow(); }
+$('#late-row').addEventListener('click', toggleLateSetting);
+$('#late-row').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLateSetting(); } });
+$('#late-opts').addEventListener('click', (e) => {
+  const by = e.target.closest('[data-by]'), gr = e.target.closest('[data-grace]');
+  if (by) S.late.byMin = Number(by.dataset.by); else if (gr) S.late.graceMin = Number(gr.dataset.grace); else return;
+  renderDestRow();
+});
+
+// The pin-drop sheet: a map, tap to drop the pin, type a name, optionally save it as a place.
+let destPick = null; // { map, marker, pin, done }
+async function openDestPicker(current, done) {
+  const sheet = $('#dest-sheet'); sheet.classList.add('on');
+  $('#dest-name').value = current?.name || $('#note-input').value.trim() || '';
+  $('#dest-save').checked = false;
+  $('#dest-err').classList.remove('on');
+  const places = getPlaces();
+  $('#dest-sheet-places').innerHTML = places.map(p => `<span class="chip place-chip" data-pick="${esc(p.name)}">📍 ${esc(p.name)}<button type="button" class="x" data-forget="${esc(p.name)}" aria-label="Forget ${esc(p.name)}">×</button></span>`).join('');
+  $('#dest-sheet-places-wrap').classList.toggle('hidden', !places.length);
+  if (destPick?.map) { try { destPick.map.stop(); destPick.map.off(); destPick.map.remove(); } catch {} }
+  destPick = { map: null, marker: null, pin: current ? { lat: current.lat, lng: current.lng } : null, done };
+  renderDestUse();
+  const el = $('#dest-map');
+  if (!window.L) { el.innerHTML = '<div class="empty">The map couldn’t load.</div>'; return; }
+  if (el._leaflet_id) { el._leaflet_id = null; el.innerHTML = ''; }
+  const map = L.map(el, { zoomControl: true, attributionControl: true }).setView([20, 0], 2);
+  map.attributionControl.setPrefix(false);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  destPick.map = map;
+  setTimeout(() => { if (destPick?.map === map) map.invalidateSize(); }, 60);
+  map.on('click', (e) => placeDestPin(e.latlng.lat, e.latlng.lng));
+  if (destPick.pin) { placeDestPin(destPick.pin.lat, destPick.pin.lng); map.setView([destPick.pin.lat, destPick.pin.lng], 16, { animate: false }); }
+  else {
+    const here = S.fix || S.share?.location;
+    if (here) map.setView([here.lat, here.lng], 15, { animate: false });
+    else { try { const p = await getPosition(); S.fix = S.fix || p; if (destPick?.map === map && !destPick.pin) map.setView([p.lat, p.lng], 15, { animate: false }); } catch {} }
+  }
+}
+const FLAG_HTML = '<div class="dpin"><span>🏁</span></div>';
+function placeDestPin(lat, lng) {
+  if (!destPick?.map) return;
+  destPick.pin = { lat, lng };
+  if (!destPick.marker) destPick.marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'bpin-wrap', html: FLAG_HTML, iconSize: [40, 40], iconAnchor: [8, 38] }), keyboard: false }).addTo(destPick.map);
+  else destPick.marker.setLatLng([lat, lng]);
+  renderDestUse();
+}
+function renderDestUse() {
+  const ok = !!destPick?.pin;
+  $('#dest-use').disabled = !ok;
+  $('#dest-hint').textContent = ok ? 'Pin dropped. Tap somewhere else to move it.' : 'Tap the map where you’re going.';
+}
+// Stop any pan or zoom first: removing a Leaflet map mid-animation throws.
+function closeDestPicker() { $('#dest-sheet').classList.remove('on'); const m = destPick?.map; destPick = null; if (m) { try { m.stop(); m.off(); m.remove(); } catch {} } }
+$('#dest-cancel').addEventListener('click', closeDestPicker);
+$('#dest-sheet-places').addEventListener('click', (e) => {
+  const f = e.target.closest('[data-forget]');
+  if (f) { e.stopPropagation(); removePlace(f.dataset.forget); f.closest('.place-chip').remove(); if (!getPlaces().length) $('#dest-sheet-places-wrap').classList.add('hidden'); renderDestRow(); return; }
+  const c = e.target.closest('[data-pick]'); if (!c) return;
+  const p = getPlaces().find(x => x.name === c.dataset.pick); if (!p) return;
+  $('#dest-name').value = p.name; placeDestPin(p.lat, p.lng); destPick.map?.setView([p.lat, p.lng], 16, { animate: false });
+});
+$('#dest-use').addEventListener('click', () => {
+  if (!destPick?.pin) return;
+  const name = $('#dest-name').value.trim().slice(0, 40);
+  if ($('#dest-save').checked) {
+    if (!name) { const e = $('#dest-err'); e.textContent = 'Give the place a name to save it, like “Home” or “Starbucks”.'; e.classList.add('on'); $('#dest-name').focus(); return; }
+    savePlace({ name, ...destPick.pin });
+  }
+  const d = { lat: destPick.pin.lat, lng: destPick.pin.lng, name: name || null };
+  const done = destPick.done; closeDestPicker(); done(d);
+});
+
+// Live screen: destination, ETA and the late check, with controls.
+function renderLiveDest() {
+  const sh = S.share; if (!sh) return;
+  const way = sh.mode !== 'now';
+  const manual = !!sh.eta?.manual, hasEta = !!sh.dest || manual;
+  $('#btn-dest-live-wrap').classList.toggle('hidden', !way || !!sh.dest);
+  $('#btn-eta-set').classList.toggle('hidden', manual);
+  $('#live-eta').classList.toggle('hidden', !hasEta);
+  if (hasEta) {
+    const to = sh.dest ? `to 🏁 ${sh.dest.name || 'your pin'}` : sh.note ? `to ${sh.note}` : 'your ETA';
+    const big = sh.eta && sh.eta.seconds != null ? etaText(sh.eta) : sh.eta?.distanceM != null ? `${etaText(sh.eta)} · ETA once you’re moving` : 'Finding your ETA…';
+    $('#live-eta').innerHTML = `<div class="eta-main"><b>${esc(big)}</b><span>${esc(to)}${manual ? ' · your estimate' : ''}</span></div>`
+      + `<div class="eta-acts"><button type="button" class="link" id="btn-eta-edit">✏️ Edit</button>${sh.dest ? '<button type="button" class="link" id="btn-dest-change">Change pin</button>' : ''}</div>`;
+  }
+  if (S.map) S.map.setDest(sh.dest);
+  const L8 = sh.late, box = $('#live-late');
+  box.classList.toggle('hidden', !hasEta);
+  if (!hasEta) return;
+  if (!L8) { box.innerHTML = `<button type="button" class="link small" id="btn-late-on">⏰ Let them know if I’m late</button>`; return; }
+  const due = new Date(L8.dueAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const nudgeAt = new Date(L8.dueAt + L8.graceMin * 60000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  let msg;
+  if (L8.nudgedAt) msg = `<b>Your watchers were told you haven’t arrived yet.</b>`;
+  else if (L8.warnedAt) msg = `<b>Running late?</b> Your watchers get a gentle nudge at ${esc(nudgeAt)} unless you arrive.`;
+  else msg = `⏰ If you’re not there by ${esc(due)}, your watchers get a nudge at ${esc(nudgeAt)}.`;
+  box.innerHTML = `<div class="late-box ${L8.warnedAt ? 'warn' : ''}"><span>${msg}</span><div class="late-acts"><button type="button" class="chip" data-late-ext="15">+15 min</button><button type="button" class="chip" data-late-off>Turn off</button></div></div>`;
+}
+$('#live-eta').addEventListener('click', (e) => {
+  if (e.target.closest('#btn-dest-change')) liveDestPick();
+  if (e.target.closest('#btn-eta-edit')) openEtaEdit();
+});
+// v0.8: type your own ETA ("I know it takes 18 minutes"). It counts down and wins until "Use automatic".
+function openEtaEdit() {
+  const f = $('#f-eta'), sh = S.share;
+  f.min.value = sh?.eta?.seconds != null ? Math.max(1, Math.round(sh.eta.seconds / 60)) : '';
+  $('#btn-eta-auto').classList.toggle('hidden', !sh?.eta?.manual);
+  f.classList.remove('hidden'); f.min.focus(); f.min.select?.();
+}
+$('#btn-eta-set').addEventListener('click', openEtaEdit);
+$('#btn-eta-cancel').addEventListener('click', () => $('#f-eta').classList.add('hidden'));
+async function saveEta(body) {
+  try {
+    const r = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/eta`, body);
+    S.share = r.share; applyLiveTrail(S.share); renderLive(); $('#f-eta').classList.add('hidden');
+    toast(body.clear ? 'Back to the automatic ETA' : `Got it: there in ${fmtMins(body.minutes)}. Watchers see it now${S.share.late ? ', and the late check uses it' : ''}`, 3200);
+  } catch (err) { if (err.status === 410) { S.share = err.body?.share || S.share; endLive(); } else toast(err.message); }
+}
+$('#f-eta').addEventListener('submit', (e) => {
+  e.preventDefault(); const m = Math.round(Number(e.target.min.value));
+  if (!(m >= 1 && m <= 600)) { toast('Type the minutes, from 1 to 600'); return; }
+  saveEta({ minutes: m });
+});
+$('#btn-eta-auto').addEventListener('click', () => saveEta({ clear: true }));
+$('#btn-dest-live').addEventListener('click', () => liveDestPick());
+function liveDestPick() {
+  openDestPicker(S.share?.dest, async (d) => {
+    try { const r = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/dest`, { dest: d }); S.share = r.share; applyLiveTrail(S.share); renderLive(); renderLiveNote(); toast('Destination set. Watchers see it on the map'); }
+    catch (err) { if (err.status === 410) { S.share = err.body?.share || S.share; endLive(); } else toast(err.message); }
+  });
+}
+$('#live-late').addEventListener('click', async (e) => {
+  const on = e.target.closest('#btn-late-on'), ext = e.target.closest('[data-late-ext]'), off = e.target.closest('[data-late-off]');
+  if (!on && !ext && !off) return;
+  const body = on ? { action: 'on', byMin: 30, graceMin: 10 } : ext ? { action: 'extend', minutes: Number(ext.dataset.lateExt) } : { action: 'off' };
+  try {
+    const r = await api('POST', `/neerly/shares/${encodeURIComponent(S.share.token)}/late`, body);
+    S.share = r.share; applyLiveTrail(S.share); renderLive();
+    toast(on ? 'On. If you’re not there in 30 min, your watchers get a nudge 10 min later' : ext ? 'Added 15 min' : 'Turned off. Nobody gets a nudge');
+  } catch (err) { toast(err.message); }
+});
+// Battery level for the late nudge (only where the browser tells it; iPhone browsers don't).
+let batteryLevel = null;
+try { navigator.getBattery?.().then(b => { batteryLevel = b.level; b.addEventListener('levelchange', () => { batteryLevel = b.level; }); }).catch(() => {}); } catch {}
+
+v08Ready = true;
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.8 — Activity: the in-app list of notifications (kept 7 days; "Clear all" any time)
+// ─────────────────────────────────────────────────────────────────────────────
+S.inboxUnread = 0;
+async function checkInbox() {
+  if (!S.session?.token || currentScreen === 'activity') return;
+  try { const d = await api('GET', '/neerly/inbox?count=1'); S.inboxUnread = d.unread; updateTabs(); } catch {}
+}
+async function openActivity() {
+  dropRecipMap(); S.recip = null;
+  show('activity');
+  $('#act-list').innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const d = await api('GET', '/neerly/inbox');
+    renderActivity(d.items);
+    if (d.unread) { await api('POST', '/neerly/inbox/read'); }
+    S.inboxUnread = 0; updateTabs();
+  } catch (err) { $('#act-list').innerHTML = `<div class="empty">${esc(err.message)}</div>`; }
+}
+function renderActivity(items) {
+  $('#btn-act-clear').classList.toggle('hidden', !items.length);
+  $('#act-list').innerHTML = items.length ? items.map(x => {
+    const m = /^(\p{Extended_Pictographic}️?)\s*(.*)$/u.exec(x.title);
+    const icon = m ? m[1] : '🔔', title = m ? m[2] : x.title;
+    return `<button type="button" class="arow ${x.read ? '' : 'unread'}" data-url="${esc(x.url)}"><span class="aicon">${esc(icon)}</span><span class="who"><b>${esc(title)}</b>${x.body ? `<span>${esc(x.body)}</span>` : ''}<span class="atime">${esc(agoLong(x.at))}</span></span></button>`;
+  }).join('') : `<div class="w-empty"><span class="buddy">${buddySvg(myBuddy(), myLook().outfit)}</span><p><b>Nothing new.</b></p><p class="small" style="margin-top:6px">Who watched, reactions, friends sharing with you and requests show up here for a week.</p></div>`;
+}
+function agoLong(ts) {
+  const s = Math.max(0, Math.round((serverNow() - ts) / 1000));
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.round(s / 60)} min ago`;
+  if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+  return new Date(ts).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+$('#act-list').addEventListener('click', (e) => {
+  const row = e.target.closest('.arow'); if (!row) return;
+  const u = row.dataset.url || '';
+  // A share link (?share=… or /neerly/p/…): open it here, with a way back.
+  const m = /[?&]share=([A-Za-z0-9_-]+)(?:&r=([A-Za-z0-9_-]+))?/.exec(u) || /\/neerly\/p\/([A-Za-z0-9_-]+)(?:\?r=([A-Za-z0-9_-]+))?/.exec(u);
+  if (m) { openRecipient(m[1], m[2] || null, true); return; }
+  openShareTab();
+});
+$('#btn-act-clear').addEventListener('click', () => {
+  modal('Clear all activity?', 'This removes everything in the list. It can’t be undone.', [
+    { label: 'Clear all', cls: 'btn-danger-solid', fn: async () => { try { const d = await api('POST', '/neerly/inbox/clear'); renderActivity(d.items); S.inboxUnread = 0; updateTabs(); toast('Cleared'); } catch (err) { toast(err.message); } } },
+    { label: 'Cancel', cls: 'btn-ghost' },
+  ]);
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Modal
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3098,6 +3461,7 @@ document.addEventListener('visibilitychange', () => {
 function freshen() {
   if (!S.session?.token) return;
   if (currentScreen === 'watching') pollWatching(); else checkWatchCount();
+  if (currentScreen === 'activity') openActivity(); else checkInbox();
   if (S.share?.active) syncLive();
 }
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', (e) => { if (e.data?.type === 'push') freshen(); });
