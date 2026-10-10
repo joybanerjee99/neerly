@@ -218,6 +218,9 @@ h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
 .alist button:last-child{border-bottom:none}
 .alist button::after{content:'›';color:var(--muted);font-size:20px;line-height:1}
 .alist .danger{color:var(--red)}
+.alist a{display:flex;justify-content:space-between;align-items:center;width:100%;padding:15px 16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text);text-decoration:none}
+.alist a:last-child{border-bottom:none}
+.alist a::after{content:'↗';color:var(--muted);font-size:15px;line-height:1}
 /* end-of-share summary */
 .sumcard{text-align:center;padding:24px 20px;background:linear-gradient(180deg,var(--accent-softer),#fff 70%)}
 .sumcard .buddy{width:88px;height:88px;margin-bottom:12px}
@@ -573,6 +576,7 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <button class="btn btn-primary" id="btn-share">Share my location</button>
     <p class="muted small center" id="share-hint" style="margin-top:8px"></p>
   </div>
+  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav></footer>
 </section>
 
 <!-- ═════════════ LIVE (sender) ═════════════ -->
@@ -707,8 +711,14 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <button id="btn-signout">Sign out</button>
     <button id="btn-delete" class="danger">Delete account</button>
   </div>
+  <h2>About Neerly</h2>
+  <div class="alist" id="p-about">
+    <a href="/how/" target="_blank" rel="noopener">How Neerly works</a>
+    <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>
+    <a href="/terms/" target="_blank" rel="noopener">Terms of Use</a>
+  </div>
   <p class="muted small center" style="margin-top:14px" id="p-email"></p>
-  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav><p>© 2026 Umunhum Labs LLC. All rights reserved.<br>Neerly is an Umunhum Labs LLC company.</p></footer>
+  <footer class="app-foot"><p>© 2026 Umunhum Labs LLC. All rights reserved.<br>Neerly is an Umunhum Labs LLC company.</p></footer>
 </section>
 
 <!-- ═════════════ EDIT PROFILE ═════════════ -->
@@ -782,6 +792,8 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   <div class="rx-bar hidden" id="r-rx"><span class="muted small" style="font-weight:600">Send <span class="sender-name"></span> a reaction</span><div class="rx-btns" id="r-rx-btns"></div></div>
   <button class="btn btn-ghost" id="btn-shareback" style="margin-top:20px">Share my location back</button>
   <p class="muted small center" style="margin-top:14px" id="r-foot">Neerly shares are time-limited. When this one ends, <span class="sender-name"></span>'s location disappears.</p>
+  <p class="center small" style="margin-top:8px"><a href="/how/" class="link" target="_blank" rel="noopener">New to Neerly? See how it works →</a></p>
+  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav></footer>
 </section>
 
 <!-- ═════════════ WATCHING (v0.7a) ═════════════ -->
@@ -833,6 +845,8 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     </form>
     <button class="btn btn-ghost hidden" id="btn-shareback2" style="margin-top:12px">Share yours back</button>
   </div>
+  <p class="center small" style="margin-top:22px"><a href="/how/" class="link" target="_blank" rel="noopener">New to Neerly? See how it works →</a></p>
+  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav></footer>
 </section>
 
 <!-- ═════════════ REQUEST SENT (+ sign-up prompt) ═════════════ -->
