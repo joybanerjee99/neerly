@@ -46,6 +46,11 @@ a{color:var(--accent-dark)}
 .screen.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
+/* v0.8.1: links to How it works, Privacy and Terms, with the copyright */
+.app-foot{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);text-align:center;font-size:13px;color:var(--muted)}
+.app-foot nav{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px;margin-bottom:6px}
+.app-foot nav a{color:var(--sub);text-decoration:none;font-weight:600}
+
 /* Brand */
 .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--accent)}
 .brand .dot{width:17px;height:27px;background:url(neerly-assets/mark.svg) center/contain no-repeat}
@@ -436,6 +441,8 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <p class="center" style="margin-top:10px"><a href="#" class="link link-muted" data-go="forgot">Forgot password?</a></p>
   </form>
   <p class="center" style="margin-top:18px">New here? <a href="#" class="link" data-go="signup">Create an account</a></p>
+  <p class="center" style="margin-top:8px"><a href="/how/" class="link link-muted" target="_blank" rel="noopener">See how Neerly works →</a></p>
+  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav><p>© 2026 Umunhum Labs LLC. All rights reserved.<br>Neerly is an Umunhum Labs LLC company.</p></footer>
 </section>
 
 <!-- ═════════════ SIGN UP ═════════════ -->
@@ -447,9 +454,11 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" inputmode="email" required></label>
     <label class="field"><span>Username</span><div class="at"><input class="input" name="username" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="yourname" required></div><div class="uhint" data-uhint>We'll suggest one from your email. Change it if you like.</div></label>
     <label class="field"><span>Password</span><div class="pw"><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required><button type="button" data-toggle-pw>Show</button></div></label>
+    <p class="muted small center" style="margin:-4px 0 12px">By creating an account you agree to the <a href="/terms/" target="_blank" rel="noopener">Terms</a> and <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>.</p>
     <button class="btn btn-primary" type="submit">Create account</button>
   </form>
   <p class="center" style="margin-top:18px">Already have one? <a href="#" class="link" data-go="signin">Sign in</a></p>
+  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav><p>© 2026 Umunhum Labs LLC. All rights reserved.<br>Neerly is an Umunhum Labs LLC company.</p></footer>
 </section>
 
 <!-- ═════════════ FORGOT ═════════════ -->
@@ -699,6 +708,7 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <button id="btn-delete" class="danger">Delete account</button>
   </div>
   <p class="muted small center" style="margin-top:14px" id="p-email"></p>
+  <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav><p>© 2026 Umunhum Labs LLC. All rights reserved.<br>Neerly is an Umunhum Labs LLC company.</p></footer>
 </section>
 
 <!-- ═════════════ EDIT PROFILE ═════════════ -->
