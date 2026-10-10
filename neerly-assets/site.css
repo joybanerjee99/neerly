@@ -1,0 +1,52 @@
+/* Neerly site pages (v0.8.1): How it works, Privacy, Terms. Same colors and font as the app. */
+:root{
+  --accent:#e85d26; --accent-dark:#c94a18; --accent-soft:#fde8dd; --accent-softer:#fff3ec;
+  --bg:#fffaf6; --surface:#ffffff; --text:#2a1a12; --sub:#6b5a50; --muted:#9a8a80;
+  --border:#f0e2d8; --border-strong:#e3cfc1; --green:#2f9e6b; --green-soft:#e5f5ed;
+  --radius:16px; --shadow:0 1px 2px rgba(80,40,20,.06),0 6px 24px rgba(80,40,20,.07);
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-dark)}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--accent);text-decoration:none}
+.brand .dot{width:17px;height:27px;background:url(/neerly-assets/mark.svg) center/contain no-repeat}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:999px;font-weight:700;text-decoration:none;white-space:nowrap}
+.pill-primary{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(232,93,38,.35)}
+.pill-ghost{background:var(--accent-softer);color:var(--accent-dark)}
+h1{font-size:clamp(30px,6vw,44px);font-weight:800;letter-spacing:-.025em;line-height:1.12}
+h2{font-size:clamp(22px,4vw,28px);font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:44px 0 12px}
+h3{font-size:18px;font-weight:700;margin:24px 0 6px}
+p,li{color:var(--text)}
+.lead{color:var(--sub);font-size:19px;margin-top:10px}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+
+/* Legal pages */
+.doc{padding:8px 0 40px}
+.doc h1{margin-top:12px}
+.doc .eff{color:var(--muted);margin-top:6px;font-size:15px}
+.doc h2{font-size:22px;margin:36px 0 10px}
+.doc p{margin:10px 0}
+.doc ul,.doc ol{margin:10px 0 10px 22px}
+.doc li{margin:6px 0}
+.doc .short{margin-top:22px;background:var(--accent-softer);border:1px solid var(--accent-soft);border-radius:var(--radius);padding:18px 20px}
+.doc .short h2{margin-top:0;font-size:18px}
+.doc .short ul{margin-bottom:0}
+.tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px;background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl th{background:var(--accent-softer);font-weight:700}
+.tbl tr:last-child td{border-bottom:none}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.toc{margin:18px 0 0;padding:14px 18px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.toc ol{margin:6px 0 0 20px;columns:2;column-gap:28px;font-size:15px}
+@media (max-width:560px){.toc ol{columns:1}}
+
+/* Footer (every page) */
+.site-foot{border-top:1px solid var(--border);margin-top:48px;padding:24px 0 calc(32px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:14px}
+.site-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:10px}
+.site-foot nav a{color:var(--sub);text-decoration:none;font-weight:600}
+.site-foot nav a:hover{color:var(--accent-dark)}
+.site-foot p{color:var(--muted)}
