@@ -147,6 +147,8 @@
 .buddies{display:flex;justify-content:center;gap:4px;margin:6px 0 0}
 .buddies svg{width:52px;height:52px}
 .cta{text-align:center;margin-top:44px}
+.top-ctas{display:flex;gap:8px}
+@media (max-width:380px){.top-ctas .pill{padding:9px 13px;font-size:15px}}
 .cta .pill{font-size:18px;padding:14px 28px}
 @media (max-width:640px){.steps,.usps{grid-template-columns:1fr}.cmp{font-size:13.5px}.cmp th,.cmp td{padding:8px 7px}}
 </style>
@@ -155,12 +157,13 @@
 <div class="wrap">
   <header class="top">
     <a class="brand" href="/"><span class="dot"></span>Neerly</a>
-    <a class="pill pill-primary" href="/">Open Neerly</a>
+    <nav class="top-ctas"><a class="pill pill-ghost" href="/?signin">Sign in</a><a class="pill pill-primary" href="/?signup">Get started</a></nav>
   </header>
 
   <section class="hero">
     <h1>I'm on my way.</h1>
     <p class="lead">Share where you are with the people you pick, for as long as you pick. They watch from a link, no app needed. Your buddy walks your route, and it ends on its own.</p>
+    <div class="ctas"><a class="pill pill-primary" href="/?signup">Get started, it's free</a><a class="pill pill-ghost" href="/?signin">Sign in</a></div>
   </section>
 
   <!-- The reel: four short scenes that play on a loop -->
@@ -308,7 +311,8 @@
     </div>
     <h2 style="margin-top:12px">Say "I'm on my way" the fun way.</h2>
     <p class="lead" style="margin-bottom:20px">Free. Works in your browser today. Add it to your Home Screen for one-tap sharing.</p>
-    <a class="pill pill-primary" href="/">Open Neerly</a>
+    <a class="pill pill-primary" href="/?signup">Create your free account</a>
+    <p class="muted" style="margin-top:14px;font-size:15px">Already have an account? <a href="/?signin">Sign in</a></p>
   </div>
 
   <footer class="site-foot">

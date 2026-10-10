@@ -444,7 +444,7 @@ body.has-tabs .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
     <p class="center" style="margin-top:10px"><a href="#" class="link link-muted" data-go="forgot">Forgot password?</a></p>
   </form>
   <p class="center" style="margin-top:18px">New here? <a href="#" class="link" data-go="signup">Create an account</a></p>
-  <p class="center" style="margin-top:8px"><a href="/how/" class="link link-muted" target="_blank" rel="noopener">See how Neerly works →</a></p>
+  <p class="center" style="margin-top:8px"><a href="/how/" class="link link-muted">See how Neerly works →</a></p>
   <footer class="app-foot"><nav><a href="/how/" target="_blank" rel="noopener">How it works</a><a href="/privacy/" target="_blank" rel="noopener">Privacy</a><a href="/terms/" target="_blank" rel="noopener">Terms</a></nav><p>© 2026 Umunhum Labs LLC. All rights reserved.<br>Neerly is an Umunhum Labs LLC company.</p></footer>
 </section>
 
@@ -3522,7 +3522,16 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
     if (!S.session?.token) return show('signin');
   }
 
-  if (!S.session?.token) return show('signin');
+  // v0.8.1: signed out, a plain visit to neerly.net shows the How it works page (it explains Neerly to newcomers).
+  // ?signin / ?signup (the buttons on that page) open those screens; the Home Screen app always opens sign-in.
+  const wantSignup = p.has('signup'), wantSignin = p.has('signin');
+  if (wantSignup || wantSignin) cleanUrl();
+  if (!S.session?.token) {
+    if (wantSignup) return show('signup');
+    const homeScreen = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    if (!wantSignin && !homeScreen && !location.search && !location.hash) return location.replace('/how/');
+    return show('signin');
+  }
   try {
     const me = await api('GET', '/neerly/me');
     setMe(me);
